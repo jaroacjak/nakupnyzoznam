@@ -76,6 +76,74 @@ button{
   display:none!important
 }
 
+/* PRIHLÁSENIE */
+
+.auth-card{
+  max-width:450px;
+  margin:50px auto
+}
+
+.auth-card h1{
+  margin-bottom:10px
+}
+
+.auth-subtitle{
+  text-align:center;
+  color:#777;
+  margin-bottom:25px
+}
+
+.auth-form{
+  display:grid;
+  gap:12px
+}
+
+.auth-form input{
+  width:100%
+}
+
+.auth-form button{
+  width:100%;
+  margin-top:5px
+}
+
+.auth-switch{
+  text-align:center;
+  margin-top:18px;
+  color:#777
+}
+
+.auth-switch button{
+  border:0;
+  background:none;
+  color:#222;
+  font-weight:bold;
+  padding:0
+}
+
+.auth-message{
+  text-align:center;
+  padding:10px;
+  border-radius:10px;
+  background:#f8f8f8;
+  margin-bottom:12px
+}
+
+.user-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:15px;
+  padding-bottom:15px;
+  border-bottom:1px solid #eee
+}
+
+.user-info{
+  color:#666;
+  font-size:14px
+}
+
 /* DÁTUMY */
 
 .date-add{
@@ -249,6 +317,11 @@ button{
   .actions button{
     flex:1
   }
+
+  .user-bar{
+    align-items:flex-start;
+    flex-direction:column
+  }
 }
 </style>
 </head>
@@ -257,9 +330,152 @@ button{
 
 <div class="app">
 
-<!-- PREHĽAD DÁTUMOV -->
+<!-- ========================= -->
+<!-- PRIHLÁSENIE -->
+<!-- ========================= -->
 
-<section id="datesPage" class="card">
+<section id="loginPage" class="card auth-card">
+
+<h1>🛒 Nákupný kalendár</h1>
+
+<div class="auth-subtitle">
+  Prihlás sa do svojho účtu
+</div>
+
+<div id="loginMessage" class="auth-message hidden"></div>
+
+<form
+  class="auth-form"
+  onsubmit="login(event)"
+>
+
+<input
+  id="loginEmail"
+  type="email"
+  placeholder="E-mail"
+  autocomplete="email"
+  required
+>
+
+<input
+  id="loginPassword"
+  type="password"
+  placeholder="Heslo"
+  autocomplete="current-password"
+  required
+>
+
+<button
+  type="submit"
+  class="primary"
+>
+  🔑 Prihlásiť sa
+</button>
+
+</form>
+
+<div class="auth-switch">
+  Nemáš účet?
+
+  <button onclick="showRegister()">
+    Zaregistrovať sa
+  </button>
+</div>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- REGISTRÁCIA -->
+<!-- ========================= -->
+
+<section
+  id="registerPage"
+  class="card auth-card hidden"
+>
+
+<h1>🛒 Vytvoriť účet</h1>
+
+<div class="auth-subtitle">
+  Zaregistruj sa a vytvor si vlastný nákupný kalendár
+</div>
+
+<div id="registerMessage" class="auth-message hidden"></div>
+
+<form
+  class="auth-form"
+  onsubmit="register(event)"
+>
+
+<input
+  id="registerEmail"
+  type="email"
+  placeholder="E-mail"
+  autocomplete="email"
+  required
+>
+
+<input
+  id="registerPassword"
+  type="password"
+  placeholder="Heslo"
+  autocomplete="new-password"
+  minlength="6"
+  required
+>
+
+<input
+  id="registerPassword2"
+  type="password"
+  placeholder="Zopakuj heslo"
+  autocomplete="new-password"
+  minlength="6"
+  required
+>
+
+<button
+  type="submit"
+  class="primary"
+>
+  👤 Zaregistrovať sa
+</button>
+
+</form>
+
+<div class="auth-switch">
+  Už máš účet?
+
+  <button onclick="showLogin()">
+    Prihlásiť sa
+  </button>
+</div>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- PREHĽAD DÁTUMOV -->
+<!-- ========================= -->
+
+<section
+  id="datesPage"
+  class="card hidden"
+>
+
+<div class="user-bar">
+
+<div class="user-info">
+  👤 <span id="currentUser"></span>
+</div>
+
+<button
+  class="secondary"
+  onclick="logout()"
+>
+  🚪 Odhlásiť sa
+</button>
+
+</div>
 
 <h1>🛒 Nákupný kalendár</h1>
 
@@ -293,12 +509,29 @@ button{
 </section>
 
 
+<!-- ========================= -->
 <!-- DETAIL DŇA -->
+<!-- ========================= -->
 
 <section
   id="shoppingPage"
   class="card hidden"
 >
+
+<div class="user-bar">
+
+<div class="user-info">
+  👤 <span id="shoppingUser"></span>
+</div>
+
+<button
+  class="secondary"
+  onclick="logout()"
+>
+  🚪 Odhlásiť sa
+</button>
+
+</div>
 
 <button
   class="back"
@@ -375,6 +608,10 @@ button{
 
 <script>
 
+/* =========================================
+   OBCHODY
+========================================= */
+
 const STORES=[
   "Lidl",
   "Kaufland",
@@ -387,24 +624,383 @@ const STORES=[
 ];
 
 
-let database=
+/* =========================================
+   POUŽÍVATELIA
+========================================= */
+
+let users=
   JSON.parse(
-    localStorage.getItem("nakupnyKalendárV2") || "{}"
+    localStorage.getItem("nakupnyPouzivateliaV1") || "{}"
   );
+
+let currentUser=
+  localStorage.getItem("nakupnyPrihlasenyV1") || null;
+
+
+/* =========================================
+   DATABÁZA NÁKUPNÝCH ZOZNAMOV
+========================================= */
+
+let database={};
 
 let currentDate=null;
 let currentStore=null;
 
 
+/* =========================================
+   NAČÍTANIE DÁT POUŽÍVATEĽA
+========================================= */
+
+function loadUserDatabase(){
+
+  if(!currentUser){
+
+    database={};
+    return;
+
+  }
+
+  const key=
+    "nakupnyKalendárV2_"+currentUser;
+
+  database=
+    JSON.parse(
+      localStorage.getItem(key) || "{}"
+    );
+
+}
+
+
+/* =========================================
+   ULOŽENIE DÁT POUŽÍVATEĽA
+========================================= */
+
 function save(){
 
+  if(!currentUser)return;
+
+  const key=
+    "nakupnyKalendárV2_"+currentUser;
+
   localStorage.setItem(
-    "nakupnyKalendárV2",
+    key,
     JSON.stringify(database)
   );
 
 }
 
+
+/* =========================================
+   ULOŽENIE POUŽÍVATEĽOV
+========================================= */
+
+function saveUsers(){
+
+  localStorage.setItem(
+    "nakupnyPouzivateliaV1",
+    JSON.stringify(users)
+  );
+
+}
+
+
+/* =========================================
+   REGISTRÁCIA
+========================================= */
+
+function register(event){
+
+  event.preventDefault();
+
+  const email=
+    document
+      .getElementById("registerEmail")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const password=
+    document
+      .getElementById("registerPassword")
+      .value;
+
+  const password2=
+    document
+      .getElementById("registerPassword2")
+      .value;
+
+
+  if(password!==password2){
+
+    showRegisterMessage(
+      "Heslá sa nezhodujú."
+    );
+
+    return;
+
+  }
+
+
+  if(password.length<6){
+
+    showRegisterMessage(
+      "Heslo musí mať aspoň 6 znakov."
+    );
+
+    return;
+
+  }
+
+
+  if(users[email]){
+
+    showRegisterMessage(
+      "Účet s týmto e-mailom už existuje."
+    );
+
+    return;
+
+  }
+
+
+  users[email]={
+    email:email,
+    password:password
+  };
+
+
+  saveUsers();
+
+
+  currentUser=email;
+
+  localStorage.setItem(
+    "nakupnyPrihlasenyV1",
+    currentUser
+  );
+
+
+  loadUserDatabase();
+
+  showApp();
+
+}
+
+
+/* =========================================
+   PRIHLÁSENIE
+========================================= */
+
+function login(event){
+
+  event.preventDefault();
+
+  const email=
+    document
+      .getElementById("loginEmail")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const password=
+    document
+      .getElementById("loginPassword")
+      .value;
+
+
+  if(!users[email]){
+
+    showLoginMessage(
+      "Účet s týmto e-mailom neexistuje."
+    );
+
+    return;
+
+  }
+
+
+  if(users[email].password!==password){
+
+    showLoginMessage(
+      "Nesprávne heslo."
+    );
+
+    return;
+
+  }
+
+
+  currentUser=email;
+
+  localStorage.setItem(
+    "nakupnyPrihlasenyV1",
+    currentUser
+  );
+
+
+  loadUserDatabase();
+
+  showApp();
+
+}
+
+
+/* =========================================
+   ODHLÁSENIE
+========================================= */
+
+function logout(){
+
+  currentUser=null;
+  currentDate=null;
+  currentStore=null;
+  database={};
+
+  localStorage.removeItem(
+    "nakupnyPrihlasenyV1"
+  );
+
+  document
+    .getElementById("datesPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("shoppingPage")
+    .classList.add("hidden");
+
+  showLogin();
+
+}
+
+
+/* =========================================
+   ZOBRAZENIE REGISTRÁCIE
+========================================= */
+
+function showRegister(){
+
+  document
+    .getElementById("loginPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("registerPage")
+    .classList.remove("hidden");
+
+  hideMessages();
+
+}
+
+
+/* =========================================
+   ZOBRAZENIE PRIHLÁSENIA
+========================================= */
+
+function showLogin(){
+
+  document
+    .getElementById("registerPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("loginPage")
+    .classList.remove("hidden");
+
+  hideMessages();
+
+}
+
+
+/* =========================================
+   ZOBRAZENIE APLIKÁCIE
+========================================= */
+
+function showApp(){
+
+  document
+    .getElementById("loginPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("registerPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("shoppingPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("datesPage")
+    .classList.remove("hidden");
+
+
+  document
+    .getElementById("currentUser")
+    .textContent=currentUser;
+
+  document
+    .getElementById("shoppingUser")
+    .textContent=currentUser;
+
+
+  const today=
+    new Date()
+      .toISOString()
+      .slice(0,10);
+
+
+  document
+    .getElementById("newDate")
+    .value=today;
+
+
+  renderDates();
+
+}
+
+
+/* =========================================
+   SPRÁVY
+========================================= */
+
+function showLoginMessage(message){
+
+  const el=
+    document.getElementById("loginMessage");
+
+  el.textContent=message;
+  el.classList.remove("hidden");
+
+}
+
+
+function showRegisterMessage(message){
+
+  const el=
+    document.getElementById("registerMessage");
+
+  el.textContent=message;
+  el.classList.remove("hidden");
+
+}
+
+
+function hideMessages(){
+
+  document
+    .getElementById("loginMessage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("registerMessage")
+    .classList.add("hidden");
+
+}
+
+
+/* =========================================
+   DÁTUMY
+========================================= */
 
 function formatDate(date){
 
@@ -462,6 +1058,10 @@ function ensureDate(date){
 }
 
 
+/* =========================================
+   PRIDAŤ DÁTUM
+========================================= */
+
 function addDate(){
 
   const input=
@@ -485,6 +1085,10 @@ function addDate(){
 }
 
 
+/* =========================================
+   SPÄŤ NA DÁTUMY
+========================================= */
+
 function showDates(){
 
   currentDate=null;
@@ -503,6 +1107,10 @@ function showDates(){
 }
 
 
+/* =========================================
+   OTVORIŤ DÁTUM
+========================================= */
+
 function openDate(date){
 
   ensureDate(date);
@@ -510,8 +1118,10 @@ function openDate(date){
   currentDate=date;
 
   currentStore=
-    localStorage.getItem("poslednyObchod")
-    || "Lidl";
+    localStorage.getItem(
+      "poslednyObchod_"+currentUser
+    ) || "Lidl";
+
 
   if(!STORES.includes(currentStore)){
 
@@ -541,6 +1151,10 @@ function openDate(date){
 }
 
 
+/* =========================================
+   ÚPRAVA DÁTUMU
+========================================= */
+
 function editDate(date){
 
   const value=
@@ -551,7 +1165,7 @@ function editDate(date){
 
   if(
     value===null ||
-    !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)
+    !/^\d{4}-\d{2}-\d{2}$/.test(value)
   ){
 
     return;
@@ -585,6 +1199,10 @@ function editDate(date){
 }
 
 
+/* =========================================
+   VYMAZAŤ DÁTUM
+========================================= */
+
 function deleteDate(date){
 
   if(
@@ -603,6 +1221,10 @@ function deleteDate(date){
 
 }
 
+
+/* =========================================
+   ZOBRAZENIE DÁTUMOV
+========================================= */
 
 function renderDates(){
 
@@ -707,6 +1329,730 @@ function renderDates(){
 }
 
 
+/* =========================================
+   OBCHODY
+========================================= */
+
+const STORES=[
+  "Lidl",
+  "Kaufland",
+  "Tesco",
+  "Billa",
+  "COOP Jednota",
+  "Terno",
+  "Penny",
+  "Iné"
+];
+
+
+/* =========================================
+   POUŽÍVATELIA
+========================================= */
+
+let users=
+  JSON.parse(
+    localStorage.getItem("nakupnyPouzivateliaV1") || "{}"
+  );
+
+let currentUser=
+  localStorage.getItem("nakupnyPrihlasenyV1") || null;
+
+
+/* =========================================
+   DATABÁZA NÁKUPNÝCH ZOZNAMOV
+========================================= */
+
+let database={};
+
+let currentDate=null;
+let currentStore=null;
+
+
+/* =========================================
+   NAČÍTANIE DÁT POUŽÍVATEĽA
+========================================= */
+
+function loadUserDatabase(){
+
+  if(!currentUser){
+
+    database={};
+    return;
+
+  }
+
+  const key=
+    "nakupnyKalendárV2_"+currentUser;
+
+  database=
+    JSON.parse(
+      localStorage.getItem(key) || "{}"
+    );
+
+}
+
+
+/* =========================================
+   ULOŽENIE DÁT POUŽÍVATEĽA
+========================================= */
+
+function save(){
+
+  if(!currentUser)return;
+
+  const key=
+    "nakupnyKalendárV2_"+currentUser;
+
+  localStorage.setItem(
+    key,
+    JSON.stringify(database)
+  );
+
+}
+
+
+/* =========================================
+   ULOŽENIE POUŽÍVATEĽOV
+========================================= */
+
+function saveUsers(){
+
+  localStorage.setItem(
+    "nakupnyPouzivateliaV1",
+    JSON.stringify(users)
+  );
+
+}
+
+
+/* =========================================
+   REGISTRÁCIA
+========================================= */
+
+function register(event){
+
+  event.preventDefault();
+
+  const email=
+    document
+      .getElementById("registerEmail")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const password=
+    document
+      .getElementById("registerPassword")
+      .value;
+
+  const password2=
+    document
+      .getElementById("registerPassword2")
+      .value;
+
+
+  if(password!==password2){
+
+    showRegisterMessage(
+      "Heslá sa nezhodujú."
+    );
+
+    return;
+
+  }
+
+
+  if(password.length<6){
+
+    showRegisterMessage(
+      "Heslo musí mať aspoň 6 znakov."
+    );
+
+    return;
+
+  }
+
+
+  if(users[email]){
+
+    showRegisterMessage(
+      "Účet s týmto e-mailom už existuje."
+    );
+
+    return;
+
+  }
+
+
+  users[email]={
+    email:email,
+    password:password
+  };
+
+
+  saveUsers();
+
+
+  currentUser=email;
+
+  localStorage.setItem(
+    "nakupnyPrihlasenyV1",
+    currentUses
+  );
+
+
+  loadUserDatabase();
+
+  showApp();
+
+}
+
+
+/* =========================================
+   PRIHLÁSENIE
+========================================= */
+
+function login(event){
+
+  event.preventDefault();
+
+  const email=
+    document
+      .getElementById("loginEmail")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const password=
+    document
+      .getElementById("loginPassword")
+      .value;
+
+
+  if(!users[email]){
+
+    showLoginMessage(
+      "Účet s týmto e-mailom neexistuje."
+    );
+
+    return;
+
+  }
+
+
+  if(users[email].password!==password){
+
+    showLoginMessage(
+      "Nesprávne heslo."
+    );
+
+    return;
+
+  }
+
+
+  currentUser=email;
+
+  localStorage.setItem(
+    "nakupnyPrihlasenyV1",
+    currentUser
+  );
+
+
+  loadUserDatabase();
+
+  showApp();
+
+}
+
+
+ODHLÁSENIE
+========================================= */
+
+function logout(){
+
+  currentUser=null;
+  currentDate=null;
+  currentStore=null;
+  database={};
+
+  localStorage.removeItem(
+    "nakupnyPrihlasenyV1"
+  );
+
+  document
+    .getElementById("datesPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("shoppingPage")
+    .classList.add("hidden");
+
+  showLogin();
+
+}
+
+
+/* =========================================
+   ZOBRAZENIE REGISTRÁCIE
+========================================= */
+
+function showRegister(){
+
+  document
+    .getElementById("loginPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("registerPage")
+    .classList.remove("hidden");
+
+  hideMessages();
+
+}
+
+
+/* =========================================
+   ZOBRAZENIE PRIHLÁSENIA
+========================================= */
+
+function showLogin(){
+
+  document
+    .getElementById("registerPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("loginPage")
+    .classList.remove("hidden");
+
+  hideMessages();
+
+}
+
+
+/* =========================================
+   ZOBRAZENIE APLIKÁCIE
+========================================= */
+
+function showApp(){
+
+  document
+    .getElementById("loginPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("registerPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("shoppingPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("datesPage")
+    .classList.remove("hidden");
+
+
+  document
+    .getElementById("currentUser")
+    .textContent=currentUser;
+
+  document
+    .getElementById("shoppingUser")
+    .textContent=currentUser;
+
+
+  const today=
+    new Date()
+      .toISOString()
+      .slice(0,10);
+
+
+  document
+    .getElementById("newDate")
+    .value=today;
+
+
+  renderDates();
+
+}
+
+
+/* =========================================
+   SPRÁVY
+========================================= */
+
+function showLoginMessage(message){
+
+  const el=
+    document.getElementById("loginMessage");
+
+  el.textContent=message;
+  el.classList.remove("hidden");
+
+}
+
+
+function showRegisterMessage(message){
+
+  const el=
+    document.getElementById("registerMessage");
+
+  el.textContent=message;
+  el.classList.remove("hidden");
+
+}
+
+
+function hideMessages(){
+
+  document
+    .getElementById("loginMessage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("registerMessage")
+    .classList.add("hidden");
+
+}
+
+
+/* =========================================
+   DÁTUMY
+========================================= */
+
+function formatDate(date){
+
+  return new Intl.DateTimeFormat(
+    "sk-SK",
+    {
+      weekday:"long",
+      day:"numeric",
+      month:"long",
+      year:"numeric"
+    }
+  ).format(
+    new Date(date+"T12:00:00")
+  );
+
+}
+
+
+function shortDate(date){
+
+  return new Intl.DateTimeFormat(
+    "sk-SK",
+    {
+      day:"numeric",
+      month:"numeric",
+      year:"numeric"
+    }
+  ).format(
+    new Date(date+"T12:00:00")
+  );
+
+}
+
+
+function ensureDate(date){
+
+  if(!database[date]){
+    database[date]={};
+  }
+
+  STORES.forEach(store=>{
+
+    if(
+      !Array.isArray(
+        database[date][store]
+      )
+    ){
+
+      database[date][store]=[];
+
+    }
+
+  });
+
+}
+
+
+/* =========================================
+   PRIDAŤ DÁTUM
+========================================= */
+
+function addDate(){
+
+  const input=
+    document.getElementById("newDate");
+
+  const date=input.value;
+
+  if(!date){
+
+    input.focus();
+    return;
+
+  }
+
+  ensureDate(date);
+
+  save();
+
+  openDate(date);
+
+}
+
+
+/* =========================================
+   SPÄŤ NA DÁTUMY
+========================================= */
+
+function showDates(){
+
+  currentDate=null;
+  currentStore=null;
+
+  document
+    .getElementById("shoppingPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("datesPage")
+    .classList.remove("hidden");
+
+  renderDates();
+
+}
+
+
+/* =========================================
+   OTVORIŤ DÁTUM
+========================================= */
+
+function openDate(date){
+
+  ensureDate(date);
+
+  currentDate=date;
+
+  currentStore=
+    localStorage.getItem(
+      "poslednyObchod_"+currentUser
+    ) || "Lidl";
+
+
+  if(!STORES.includes(currentStore)){
+
+    currentStore="Lidl";
+
+  }
+
+
+  document
+    .getElementById("datesPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("shoppingPage")
+    .classList.remove("hidden");
+
+
+  document
+    .getElementById("selectedDate")
+    .textContent=
+      "📅 "+formatDate(date);
+
+
+  renderStores();
+  renderItems();
+
+}
+
+
+/* =========================================
+   ÚPRAVA DÁTUMU
+========================================= */
+
+function editDate(date){
+
+  const value=
+    prompt(
+      "Uprav dátum (RRRR-MM-DD):",
+      date
+    );
+
+  if(
+    value===null ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(value)
+  ){
+
+    return;
+
+  }
+
+  if(value===date){
+
+    return;
+
+  }
+
+  if(database[value]){
+
+    alert(
+      "Tento dátum už existuje."
+    );
+
+    return;
+
+  }
+
+  database[value]=database[date];
+
+  delete database[date];
+
+  save();
+
+  renderDates();
+
+}
+
+
+/* =========================================
+   VYMAZAŤ DÁTUM
+========================================= */
+
+function deleteDate(date){
+
+  if(
+    confirm(
+      "Naozaj chceš vymazať tento dátum a všetky jeho nákupy?"
+    )
+  ){
+
+    delete database[date];
+
+    save();
+
+    renderDates();
+
+  }
+
+}
+
+
+/* =========================================
+   ZOBRAZENIE DÁTUMOV
+========================================= */
+
+function renderDates(){
+
+  const el=
+    document.getElementById("dateList");
+
+  const dates=
+    Object.keys(database)
+      .sort()
+      .reverse();
+
+
+  if(!dates.length){
+
+    el.innerHTML=
+      '<div class="empty">Zatiaľ nemáš žiadny nákupný zoznam.<br>Vyber dátum a pridaj ho.</div>';
+
+    return;
+
+  }
+
+
+  el.innerHTML=
+    dates.map(date=>{
+
+      const total=
+        STORES.reduce(
+          (sum,store)=>
+            sum+
+            (
+              database[date][store] || []
+            ).length,
+          0
+        );
+
+
+      const bought=
+        STORES.reduce(
+          (sum,store)=>
+            sum+
+            (
+              database[date][store] || []
+            ).filter(
+              x=>x.done
+            ).length,
+          0
+        );
+
+
+      return `
+
+      <div class="date-row">
+
+        <div
+          class="date-info"
+          onclick="openDate('${date}')"
+        >
+
+          <strong>
+            📅 ${formatDate(date)}
+          </strong>
+
+          <div class="meta">
+            ${total} položiek •
+            ${bought} kúpených
+          </div>
+
+        </div>
+
+
+        <div class="actions">
+
+          <button
+            class="primary"
+            onclick="openDate('${date}')"
+          >
+            Otvoriť
+          </button>
+
+          <button
+            class="secondary"
+            onclick="editDate('${date}')"
+          >
+            ✏️
+          </button>
+
+          <button
+            class="danger"
+            onclick="deleteDate('${date}')"
+          >
+            🗑️
+          </button>
+
+        </div>
+
+      </div>
+
+      `;
+
+    }).join("");
+
+}
+
+
+/* =========================================
+   OBCHODY
+========================================= */
+
 function renderStores(){
 
   const el=
@@ -740,7 +2086,7 @@ function selectStore(store){
   currentStore=store;
 
   localStorage.setItem(
-    "poslednyObchod",
+    "poslednyObchod_"+currentUser,
     store
   );
 
@@ -753,6 +2099,10 @@ function selectStore(store){
 
 }
 
+
+/* =========================================
+   PRIDAŤ POLOŽKU
+========================================= */
 
 function addItem(){
 
@@ -808,6 +2158,10 @@ function addItem(){
 }
 
 
+/* =========================================
+   ZMENA MNOŽSTVA
+========================================= */
+
 function changeQty(id,change){
 
   const item=findItem(id);
@@ -827,6 +2181,10 @@ function changeQty(id,change){
 }
 
 
+/* =========================================
+   KÚPENÉ / NEKÚPENÉ
+========================================= */
+
 function toggleItem(id){
 
   const item=findItem(id);
@@ -841,6 +2199,10 @@ function toggleItem(id){
 
 }
 
+
+/* =========================================
+   ÚPRAVA POLOŽKY
+========================================= */
 
 function editItem(id){
 
@@ -890,6 +2252,10 @@ function editItem(id){
 }
 
 
+/* =========================================
+   VYMAZAŤ POLOŽKU
+========================================= */
+
 function deleteItem(id){
 
   database[currentDate][currentStore]=
@@ -904,6 +2270,10 @@ function deleteItem(id){
 
 }
 
+
+/* =========================================
+   VYMAZAŤ KÚPENÉ
+========================================= */
 
 function clearBought(){
 
@@ -920,6 +2290,10 @@ function clearBought(){
 }
 
 
+/* =========================================
+   NÁJSŤ POLOŽKU
+========================================= */
+
 function findItem(id){
 
   return database[currentDate][currentStore]
@@ -929,6 +2303,10 @@ function findItem(id){
 
 }
 
+
+/* =========================================
+   ZOBRAZENIE POLOŽIEK
+========================================= */
 
 function renderItems(){
 
@@ -1022,6 +2400,10 @@ function renderItems(){
 }
 
 
+/* =========================================
+   OCHRANA HTML
+========================================= */
+
 function escapeHtml(text){
 
   const div=
@@ -1033,6 +2415,10 @@ function escapeHtml(text){
 
 }
 
+
+/* =========================================
+   ENTER = PRIDAŤ POLOŽKU
+========================================= */
 
 document
   .getElementById("itemName")
@@ -1056,18 +2442,25 @@ document
   );
 
 
-const today=
-  new Date()
-    .toISOString()
-    .slice(0,10);
+/* =========================================
+   ŠTART APLIKÁCIE
+========================================= */
 
+if(currentUser && users[currentUser]){
 
-document
-  .getElementById("newDate")
-  .value=today;
+  loadUserDatabase();
 
+  showApp();
 
-renderDates();
+}else{
+
+  localStorage.removeItem(
+    "nakupnyPrihlasenyV1"
+  );
+
+  showLogin();
+
+}
 
 </script>
 
