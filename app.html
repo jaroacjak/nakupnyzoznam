@@ -5,110 +5,273 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
 <title>🛒 Nákupný kalendár</title>
 
-<link rel="stylesheet" href="css/style.css">
 
-<!-- Leaflet mapa -->
+<link
+  rel="stylesheet"
+  href="css/style.css"
+>
+
+
+<!-- =====================================================
+     LEAFLET MAPA
+===================================================== -->
+
 <link
   rel="stylesheet"
   href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
 
+
 <style>
 
+/* =====================================================
+   MAPA
+===================================================== */
+
 #map{
+
   width:100%;
+
   height:500px;
+
   border-radius:18px;
+
   margin-top:15px;
+
   border:1px solid #ddd;
+
 }
+
+
+/* =====================================================
+   OVLÁDANIE MAPY
+===================================================== */
 
 .map-controls{
+
   display:flex;
+
   flex-wrap:wrap;
+
   gap:8px;
+
   margin-top:12px;
+
 }
+
 
 .map-controls button{
+
   flex:1;
-  min-width:130px;
+
+  min-width:140px;
+
 }
+
+
+/* =====================================================
+   INFORMÁCIE MAPY
+===================================================== */
 
 .map-info{
+
   margin-top:12px;
+
   padding:12px;
-  background:#f1f1f1;
+
   border-radius:12px;
+
+  background:#f1f1f1;
+
 }
+
 
 .selected-map-store{
-  margin-top:10px;
-  padding:12px;
-  background:#eaf7ea;
-  border-radius:12px;
+
   display:none;
-}
 
-.store-choice{
-  display:flex;
-  align-items:center;
-  gap:10px;
   margin-top:10px;
+
   padding:12px;
-  border:1px solid #ddd;
+
   border-radius:12px;
+
+  background:#eaf7ea;
+
+}
+
+
+/* =====================================================
+   FILTRE OBCHODOV
+===================================================== */
+
+.store-filters{
+
+  display:flex;
+
+  flex-wrap:wrap;
+
+  gap:7px;
+
+  margin-top:12px;
+
+}
+
+
+.store-filter{
+
+  background:#eee;
+
+  border:0;
+
+}
+
+
+.store-filter.active{
+
+  background:#222;
+
+  color:#fff;
+
+}
+
+
+/* =====================================================
+   ZOZNAM OBCHODOV
+===================================================== */
+
+.nearby-stores{
+
+  display:grid;
+
+  gap:8px;
+
+  margin-top:15px;
+
+}
+
+
+.nearby-store{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  padding:12px;
+
+  border:1px solid #ddd;
+
+  border-radius:12px;
+
   background:#fafafa;
+
 }
 
-.store-choice-info{
+
+.nearby-store-info{
+
   flex:1;
+
 }
 
-.store-choice-name{
+
+.nearby-store-name{
+
   font-weight:bold;
+
 }
 
-.store-choice-distance{
+
+.nearby-store-distance{
+
   color:#777;
+
   font-size:13px;
+
   margin-top:3px;
+
 }
+
+
+/* =====================================================
+   POUŽÍVATEĽ
+===================================================== */
 
 .user-bar{
+
   display:flex;
-  align-items:center;
+
   justify-content:space-between;
+
+  align-items:center;
+
   gap:10px;
+
   margin-bottom:15px;
+
 }
 
+
 .user-name{
+
   font-weight:bold;
+
 }
+
+
+/* =====================================================
+   MOBIL
+===================================================== */
 
 @media(max-width:600px){
 
   #map{
+
     height:380px;
+
   }
+
 
   .map-controls{
+
     display:grid;
+
     grid-template-columns:1fr 1fr;
+
   }
+
 
   .map-controls button{
+
     min-width:0;
+
   }
 
+
+  .store-filters{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+  }
+
+
   .user-bar{
-    flex-direction:column;
+
     align-items:flex-start;
+
+    flex-direction:column;
+
   }
 
 }
@@ -125,7 +288,7 @@
 
 
 <!-- =====================================================
-     HLAVNÝ NÁKUPNÝ KALENDÁR
+     DÁTUMY
 ===================================================== -->
 
 <section
@@ -136,9 +299,11 @@
 
 <div class="user-bar">
 
+
   <div class="user-name">
 
     👤
+
     <span id="currentUser">
       Používateľ
     </span>
@@ -150,22 +315,26 @@
     class="secondary"
     onclick="logoutUser()"
   >
+
     🚪 Odhlásiť sa
+
   </button>
+
 
 </div>
 
 
 <h1>
+
   🛒 Nákupný kalendár
+
 </h1>
 
 
-<!-- =====================================================
-     PRIDAŤ DÁTUM
-===================================================== -->
+<!-- PRIDAŤ DÁTUM -->
 
 <div class="date-add">
+
 
   <input
     id="newDate"
@@ -177,14 +346,19 @@
     class="primary"
     onclick="addDate()"
   >
+
     + Pridať dátum
+
   </button>
+
 
 </div>
 
 
 <h2>
+
   📅 Všetky dátumy
+
 </h2>
 
 
@@ -207,24 +381,30 @@
 
 
 <!-- =====================================================
-     MAPA
+     MAPA OBCHODOV
 ===================================================== -->
 
 <section class="card">
 
 
 <h2>
-  🗺️ Mapa obchodov
+
+  🗺️ Mapa predajní
+
 </h2>
 
 
 <p class="meta">
 
-  Vyber si obchod priamo na mape.
-  Môžeš si mapu približovať a posúvať.
+  Na mape môžeš vyhľadať predajne
+  a vybrať si obchod pre svoj nákup.
 
 </p>
 
+
+<!-- =====================================================
+     TLAČIDLÁ
+===================================================== -->
 
 <div class="map-controls">
 
@@ -233,7 +413,9 @@
     class="primary"
     onclick="mojaPoloha()"
   >
+
     📍 Moja poloha
+
   </button>
 
 
@@ -241,7 +423,9 @@
     class="secondary"
     onclick="showSlovakia()"
   >
-    🇸🇰 Slovensko
+
+    🇸🇰 Celé Slovensko
+
   </button>
 
 
@@ -249,27 +433,149 @@
     class="secondary"
     onclick="findNearbyStores()"
   >
-    🏪 Obchody v okolí
+
+    🔎 Obchody v okolí
+
   </button>
 
 
 </div>
 
 
+
+<!-- =====================================================
+     FILTRE
+===================================================== -->
+
+<h3>
+
+  🏪 Vyber obchod
+
+</h3>
+
+
+<div class="store-filters">
+
+
+  <button
+    class="store-filter active"
+    onclick="filterStores('all')"
+  >
+
+    🏪 Všetky
+
+  </button>
+
+
+  <button
+    class="store-filter"
+    onclick="filterStores('Lidl')"
+  >
+
+    🛒 Lidl
+
+  </button>
+
+
+  <button
+    class="store-filter"
+    onclick="filterStores('COOP')"
+  >
+
+    🛒 COOP Jednota
+
+  </button>
+
+
+  <button
+    class="store-filter"
+    onclick="filterStores('Kaufland')"
+  >
+
+    🛒 Kaufland
+
+  </button>
+
+
+  <button
+    class="store-filter"
+    onclick="filterStores('Tesco')"
+  >
+
+    🛒 Tesco
+
+  </button>
+
+
+  <button
+    class="store-filter"
+    onclick="filterStores('Billa')"
+  >
+
+    🛒 Billa
+
+  </button>
+
+
+  <button
+    class="store-filter"
+    onclick="filterStores('Terno')"
+  >
+
+    🛒 Terno
+
+  </button>
+
+
+  <button
+    class="store-filter"
+    onclick="filterStores('Penny')"
+  >
+
+    🛒 Penny
+
+  </button>
+
+
+  <button
+    class="store-filter"
+    onclick="filterStores('other')"
+  >
+
+    🏪 Ostatné
+
+  </button>
+
+
+</div>
+
+
+
+<!-- =====================================================
+     INFO
+===================================================== -->
+
 <div
   id="mapInfo"
   class="map-info"
 >
 
-  🗺️ Vyber obchod na mape.
+  🗺️ Vyber „Celé Slovensko“
+  alebo „Moja poloha“.
 
 </div>
 
+
+
+<!-- =====================================================
+     VYBRANÝ OBCHOD
+===================================================== -->
 
 <div
   id="selectedMapStore"
   class="selected-map-store"
 ></div>
+
 
 
 <!-- =====================================================
@@ -279,12 +585,14 @@
 <div id="map"></div>
 
 
+
 <!-- =====================================================
      ZOZNAM OBCHODOV
 ===================================================== -->
 
 <div
   id="nearbyStores"
+  class="nearby-stores"
 ></div>
 
 
@@ -304,9 +612,11 @@
 
 <div class="user-bar">
 
+
   <div class="user-name">
 
     👤
+
     <span id="shoppingUser">
       Používateľ
     </span>
@@ -318,10 +628,14 @@
     class="secondary"
     onclick="logoutUser()"
   >
+
     🚪 Odhlásiť sa
+
   </button>
 
+
 </div>
+
 
 
 <!-- SPÄŤ -->
@@ -330,8 +644,11 @@
   class="back"
   onclick="showDates()"
 >
+
   ← Späť na dátumy
+
 </button>
+
 
 
 <!-- DÁTUM -->
@@ -344,11 +661,13 @@
 
 
 <!-- =====================================================
-     VÝBER OBCHODU
+     OBCHODY
 ===================================================== -->
 
 <h2>
-  🏪 Vyber obchod
+
+  🏪 Obchod
+
 </h2>
 
 
@@ -390,7 +709,9 @@
     class="primary"
     onclick="addItem()"
   >
+
     + Pridať
+
   </button>
 
 
@@ -399,7 +720,7 @@
 
 
 <!-- =====================================================
-     ZOZNAM POLOŽIEK
+     POLOŽKY
 ===================================================== -->
 
 <div
@@ -409,7 +730,7 @@
 
 
 <!-- =====================================================
-     SPODNÁ LIŠTA
+     SPODOK
 ===================================================== -->
 
 <div class="bottom">
@@ -424,7 +745,9 @@
     class="danger"
     onclick="clearBought()"
   >
+
     Vymazať kúpené
+
   </button>
 
 
@@ -459,7 +782,7 @@
 
 
 <!-- =====================================================
-     NÁKUPNÝ KALENDÁR
+     APP
 ===================================================== -->
 
 <script
@@ -469,7 +792,7 @@
 
 
 <!-- =====================================================
-     MAPA
+     MAP
 ===================================================== -->
 
 <script
@@ -537,9 +860,7 @@ document.addEventListener(
     }
 
 
-    /*
-     * Dnešný dátum.
-     */
+    /* Dnešný dátum */
 
     const dateInput =
       document.getElementById(
@@ -552,14 +873,10 @@ document.addEventListener(
       !dateInput.value
     ){
 
-      const today =
+      dateInput.value =
         new Date()
           .toISOString()
           .slice(0,10);
-
-
-      dateInput.value =
-        today;
 
     }
 
@@ -605,7 +922,7 @@ function logoutUser(){
 
 
 /* =====================================================
-   OCHRANA STRÁNKY
+   OCHRANA APP.HTML
 ===================================================== */
 
 window.addEventListener(
