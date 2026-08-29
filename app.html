@@ -12,24 +12,30 @@
 
 <title>🛒 Nákupný kalendár</title>
 
+
 <link
   rel="stylesheet"
   href="css/style.css"
 >
+
+
+<!-- Leaflet mapa -->
 
 <link
   rel="stylesheet"
   href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
 
+
 <style>
 
 #map{
   width:100%;
-  height:400px;
+  height:420px;
   border-radius:16px;
   margin-top:15px;
 }
+
 
 .map-buttons{
   display:flex;
@@ -38,23 +44,27 @@
   margin-top:12px;
 }
 
+
 .map-buttons button{
   flex:1;
   min-width:130px;
 }
 
+
 .selected-store{
   margin-top:12px;
   padding:12px;
-  background:#f1f1f1;
   border-radius:12px;
+  background:#f1f1f1;
 }
 
-.nearby-list{
+
+.nearby-stores{
   display:grid;
   gap:8px;
   margin-top:15px;
 }
+
 
 .nearby-store{
   display:flex;
@@ -66,37 +76,55 @@
   background:#fafafa;
 }
 
+
 .nearby-store-info{
   flex:1;
 }
+
 
 .nearby-store-name{
   font-weight:bold;
 }
 
+
 .nearby-store-distance{
   color:#777;
   font-size:13px;
-  margin-top:3px;
+  margin-top:4px;
 }
+
 
 .user-bar{
   display:flex;
-  justify-content:space-between;
   align-items:center;
+  justify-content:space-between;
   gap:10px;
   margin-bottom:15px;
 }
 
-.user-info{
+
+.user-name{
   font-weight:bold;
 }
+
 
 @media(max-width:600px){
 
   #map{
     height:330px;
   }
+
+
+  .map-buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+
+
+  .map-buttons button{
+    min-width:0;
+  }
+
 
   .user-bar{
     align-items:flex-start;
@@ -117,7 +145,7 @@
 
 
 <!-- ==================================================
-     HLAVNÁ STRÁNKA
+     NÁKUPNÝ KALENDÁR
 ================================================== -->
 
 <section
@@ -126,9 +154,11 @@
 >
 
 
+<!-- PRIHLÁSENÝ POUŽÍVATEĽ -->
+
 <div class="user-bar">
 
-  <div class="user-info">
+  <div class="user-name">
 
     👤
     <span id="currentUser">
@@ -153,7 +183,7 @@
 </h1>
 
 
-<!-- DÁTUM -->
+<!-- PRIDAŤ DÁTUM -->
 
 <div class="date-add">
 
@@ -197,7 +227,7 @@
 
 
 <!-- ==================================================
-     MAPA
+     MAPA OBCHODOV
 ================================================== -->
 
 <section class="card">
@@ -210,8 +240,8 @@
 
 <p class="meta">
 
-  Povoľ polohu a zobrazíme obchody
-  v tvojom okolí.
+  Povoľ svoju polohu a mapa zobrazí
+  najbližšie obchody.
 
 </p>
 
@@ -229,7 +259,7 @@
 
   <button
     class="secondary"
-    onclick="findNearbyStoresManually('Lidl')"
+    onclick="findNearbyStoresByBrand('Lidl')"
   >
     🛒 Lidl
   </button>
@@ -237,7 +267,7 @@
 
   <button
     class="secondary"
-    onclick="findNearbyStoresManually('COOP Jednota')"
+    onclick="findNearbyStoresByBrand('COOP')"
   >
     🛒 COOP Jednota
   </button>
@@ -245,9 +275,17 @@
 
   <button
     class="secondary"
-    onclick="findNearbyStoresManually('Kaufland')"
+    onclick="findNearbyStoresByBrand('Kaufland')"
   >
     🛒 Kaufland
+  </button>
+
+
+  <button
+    class="secondary"
+    onclick="findNearbyStores()"
+  >
+    🏪 Všetky obchody
   </button>
 
 </div>
@@ -257,18 +295,24 @@
   id="selectedStore"
   class="selected-store"
 >
+
   📍 Klikni na „Moja poloha“.
+
 </div>
 
+
+<!-- MAPA -->
 
 <div
   id="map"
 ></div>
 
 
+<!-- ZOZNAM OBCHODOV -->
+
 <div
   id="nearbyStores"
-  class="nearby-list"
+  class="nearby-stores"
 ></div>
 
 
@@ -277,7 +321,7 @@
 
 
 <!-- ==================================================
-     DETAIL NÁKUPNÉHO DŇA
+     DETAIL NÁKUPU
 ================================================== -->
 
 <section
@@ -288,7 +332,7 @@
 
 <div class="user-bar">
 
-  <div class="user-info">
+  <div class="user-name">
 
     👤
     <span id="shoppingUser">
@@ -308,6 +352,8 @@
 </div>
 
 
+<!-- SPÄŤ -->
+
 <button
   class="back"
   onclick="showDates()"
@@ -316,11 +362,15 @@
 </button>
 
 
+<!-- VYBRANÝ DÁTUM -->
+
 <div
   id="selectedDate"
   class="selected-date"
 ></div>
 
+
+<!-- OBCHODY -->
 
 <h2>
   🏪 Obchod
@@ -339,7 +389,9 @@
 ></h3>
 
 
-<!-- PRIDANIE POLOŽKY -->
+<!-- ==================================================
+     PRIDAŤ POLOŽKU
+================================================== -->
 
 <div class="add-item">
 
@@ -369,12 +421,18 @@
 </div>
 
 
-<!-- ZOZNAM POLOŽIEK -->
+<!-- ==================================================
+     ZOZNAM POLOŽIEK
+================================================== -->
 
 <div
   id="itemList"
 ></div>
 
+
+<!-- ==================================================
+     SPODNÁ LIŠTA
+================================================== -->
 
 <div class="bottom">
 
@@ -413,7 +471,7 @@
 
 
 <!-- ==================================================
-     AUTH
+     PRIHLÁSENIE
 ================================================== -->
 
 <script
@@ -423,7 +481,7 @@
 
 
 <!-- ==================================================
-     APP
+     NÁKUPNÝ KALENDÁR
 ================================================== -->
 
 <script
@@ -444,18 +502,13 @@
 
 <script>
 
-/* ==================================================
+/* =====================================================
    KONTROLA PRIHLÁSENIA
-================================================== */
+===================================================== */
 
 document.addEventListener(
   "DOMContentLoaded",
   function(){
-
-    /*
-     * Ak auth.js obsahuje getCurrentUser(),
-     * skontrolujeme používateľa.
-     */
 
     if(
       typeof getCurrentUser ===
@@ -465,6 +518,11 @@ document.addEventListener(
       const user =
         getCurrentUser();
 
+
+      /*
+       * Neprihlásený používateľ
+       * nesmie používať aplikáciu.
+       */
 
       if(!user){
 
@@ -509,9 +567,9 @@ document.addEventListener(
 );
 
 
-/* ==================================================
+/* =====================================================
    ODHLÁSENIE
-================================================== */
+===================================================== */
 
 function logoutUser(){
 
@@ -537,15 +595,20 @@ function logoutUser(){
   );
 
 
+  localStorage.removeItem(
+    "user"
+  );
+
+
   window.location.href =
     "index.html";
 
 }
 
 
-/* ==================================================
-   DODATOČNÁ OCHRANA
-================================================== */
+/* =====================================================
+   OCHRANA PRI NÁVRATE NA STRÁNKU
+===================================================== */
 
 window.addEventListener(
   "pageshow",
@@ -562,6 +625,40 @@ window.addEventListener(
           "login.html";
 
       }
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   DNEŠNÝ DÁTUM
+===================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function(){
+
+    const dateInput =
+      document.getElementById(
+        "newDate"
+      );
+
+
+    if(
+      dateInput &&
+      !dateInput.value
+    ){
+
+      const today =
+        new Date()
+          .toISOString()
+          .slice(0,10);
+
+
+      dateInput.value =
+        today;
 
     }
 
