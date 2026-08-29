@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>🔑 Prihlásenie – Nákupný kalendár</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f2f4f7;
+  color:#222;
+  font-family:Arial,sans-serif;
+  padding:16px;
+}
+
+.card{
+  width:100%;
+  max-width:430px;
+  background:#fff;
+  border-radius:20px;
+  padding:28px;
+  box-shadow:0 5px 25px #0001;
+}
+
+h1{
+  text-align:center;
+  margin:0 0 10px;
+}
+
+.subtitle{
+  text-align:center;
+  color:#777;
+  margin-bottom:25px;
+}
+
+.form{
+  display:grid;
+  gap:12px;
+}
+
+input,
+button{
+  width:100%;
+  font:inherit;
+  border-radius:10px;
+  padding:12px;
+  border:1px solid #ccc;
+}
+
+input:focus{
+  outline:none;
+  border-color:#222;
+}
+
+button{
+  cursor:pointer;
+}
+
+.primary{
+  background:#222;
+  color:#fff;
+  border:0;
+  margin-top:5px;
+}
+
+.primary:hover{
+  opacity:.9;
+}
+
+.message{
+  padding:11px;
+  border-radius:10px;
+  background:#f1f1f1;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:14px;
+}
+
+.hidden{
+  display:none;
+}
+
+.register{
+  text-align:center;
+  margin-top:20px;
+  color:#777;
+}
+
+.register button{
+  width:auto;
+  padding:0;
+  border:0;
+  background:none;
+  font-weight:bold;
+  color:#222;
+}
+
+.logo{
+  text-align:center;
+  font-size:45px;
+  margin-bottom:8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <div class="logo">
+    🛒
+  </div>
+
+  <h1>Nákupný kalendár</h1>
+
+  <div class="subtitle">
+    Prihlás sa do svojho účtu
+  </div>
+
+
+  <div
+    id="message"
+    class="message hidden"
+  ></div>
+
+
+  <form
+    id="loginForm"
+    class="form"
+  >
+
+    <input
+      id="email"
+      type="email"
+      placeholder="E-mail"
+      autocomplete="email"
+      required
+    >
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Heslo"
+      autocomplete="current-password"
+      required
+    >
+
+    <button
+      type="submit"
+      class="primary"
+    >
+      🔑 Prihlásiť sa
+    </button>
+
+  </form>
+
+
+  <div class="register">
+
+    Nemáš ešte účet?
+
+    <button
+      onclick="goToRegister()"
+    >
+      Zaregistrovať sa
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/*
+=========================================
+  PRIHLÁSENIE
+=========================================
+*/
+
+const loginForm=
+  document.getElementById("loginForm");
+
+const message=
+  document.getElementById("message");
+
+
+loginForm.addEventListener(
+  "submit",
+  function(event){
+
+    event.preventDefault();
+
+
+    const email=
+      document
+        .getElementById("email")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const password=
+      document
+        .getElementById("password")
+        .value;
+
+
+    /*
+      Používatelia sú zatiaľ uložené
+      v localStorage.
+    */
+
+    const users=
+      JSON.parse(
+        localStorage.getItem(
+          "nakupnyPouzivateliaV1"
+        ) || "{}"
+      );
+
+
+    /*
+      Kontrola účtu
+    */
+
+    if(!users[email]){
+
+      showMessage(
+        "Účet s týmto e-mailom neexistuje."
+      );
+
+      return;
+
+    }
+
+
+    /*
+      Kontrola hesla
+    */
+
+    if(
+      users[email].password !== password
+    ){
+
+      showMessage(
+        "Nesprávne heslo."
+      );
+
+      return;
+
+    }
+
+
+    /*
+      Prihlásenie
+    */
+
+    localStorage.setItem(
+      "nakupnyPrihlasenyV1",
+      email
+    );
+
+
+    /*
+      Presmerovanie
+      do hlavnej aplikácie
+    */
+
+    window.location.href="index.html";
+
+  }
+);
+
+
+/*
+=========================================
+  SPRÁVA
+=========================================
+*/
+
+function showMessage(text){
+
+  message.textContent=text;
+
+  message.classList.remove(
+    "hidden"
+  );
+
+}
+
+
+/*
+=========================================
+  REGISTRÁCIA
+=========================================
+*/
+
+function goToRegister(){
+
+  /*
+    Zatiaľ používame register.html.
+  */
+
+  window.location.href="register.html";
+
+}
+
+
+/*
+=========================================
+  AK UŽ JE POUŽÍVATEĽ PRIHLÁSENÝ
+=========================================
+*/
+
+const loggedUser=
+  localStorage.getItem(
+    "nakupnyPrihlasenyV1"
+  );
+
+
+if(loggedUser){
+
+  const users=
+    JSON.parse(
+      localStorage.getItem(
+        "nakupnyPouzivateliaV1"
+      ) || "{}"
+    );
+
+
+  if(users[loggedUser]){
+
+    window.location.href="index.html";
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
