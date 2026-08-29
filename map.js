@@ -1,27 +1,11 @@
 /* =====================================================
    js/map.js
-   Mapa + moja poloha + najbližšie obchody
+   MAPA + MOJA POLOHA
 ===================================================== */
 
 let map = null;
 let userMarker = null;
-let storeMarkers = [];
-
-let userLatitude = null;
-let userLongitude = null;
-
-
-/* =====================================================
-   NASTAVENIA
-===================================================== */
-
-const SEARCH_RADIUS = 5000;
-
-const ALLOWED_STORES = [
-  "Lidl",
-  "COOP Jednota",
-  "Kaufland"
-];
+let accuracyCircle = null;
 
 
 /* =====================================================
@@ -51,11 +35,14 @@ document.addEventListener(
 
 function initMap(){
 
-  map =
-    L.map("map").setView(
-      [48.7164, 18.5903],
-      8
-    );
+  /*
+   * Začiatok mapy = celé Slovensko
+   */
+
+  map = L.map("map").setView(
+    [48.669, 19.699],
+    7
+  );
 
 
   L.tileLayer(
@@ -64,27 +51,9 @@ function initMap(){
       maxZoom:19,
 
       attribution:
-        '&copy; OpenStreetMap contributors'
+        "&copy; OpenStreetMap contributors"
     }
   ).addTo(map);
-
-
-  /*
-   * Kliknutie na mapu
-   */
-
-  map.on(
-    "click",
-    function(event){
-
-      console.log(
-        "Kliknutie na mapu:",
-        event.latlng.lat,
-        event.latlng.lng
-      );
-
-    }
-  );
 
 }
 
@@ -94,6 +63,11 @@ function initMap(){
 ===================================================== */
 
 function mojaPoloha(){
+
+  /*
+   * Prehliadač musí požiadať používateľa
+   * o povolenie GPS.
+   */
 
   if(!navigator.geolocation){
 
@@ -105,40 +79,160 @@ function mojaPoloha(){
   }
 
 
-  /*
-   * Prehliadač zobrazí používateľovi
-   * otázku na povolenie polohy.
-   */
+  const info =
+    document.getElementById(
+      "mapInfo"
+    );
+
+
+  if(info){
+
+    info.textContent =
+      "📍 Zisťujem tvoju polohu...";
+
+  }
+
 
   navigator.geolocation.getCurrentPosition(
 
+    /*
+     * ÚSPECH
+     */
+
     function(position){
 
-      userLatitude =
+      const latitude =
         position.coords.latitude;
 
-      userLongitude =
+      const longitude =
         position.coords.longitude;
 
+      const accuracy =
+        position.coords.accuracy;
 
-      showUserLocation(
-        userLatitude,
-        userLongitude
+
+      console.log(
+        "Moja poloha:",
+        latitude,
+        longitude
       );
 
 
-      findNearbyStores(
-        userLatitude,
-        userLongitude
+      /*
+       * Presun mapy na používateľa.
+       */
+
+      map.setView(
+        [
+          latitude,
+          longitude
+        ],
+        15
       );
+
+
+      /*
+       * Ak už marker existuje,
+       * odstránime ho.
+       */
+
+      if(userMarker){
+
+        map.removeLayer(
+          userMarker
+        );
+
+      }
+
+
+      /*
+       * Marker používateľa.
+       */
+
+      userMarker =
+        L.marker(
+          [
+            latitude,
+            longitude
+          ]
+        )
+        .addTo(map)
+        .bindPopup(
+          "📍 <b>Tvoja poloha</b>"
+        );
+
+
+      userMarker.openPopup();
+
+
+      /*
+       * Kruh presnosti GPS.
+       */
+
+      if(accuracyCircle){
+
+        map.removeLayer(
+          accuracyCircle
+        );
+
+      }
+
+
+      accuracyCircle =
+        L.circle(
+          [
+            latitude,
+            longitude
+          ],
+          {
+            radius:accuracy
+          }
+        )
+        .addTo(map);
+
+
+      if(info){
+
+        info.textContent =
+          "📍 Tvoja poloha bola nájdená.";
+
+      }
+
+
+      /*
+       * Po získaní polohy môžeme
+       * vyhľadať obchody.
+       */
+
+      if(
+        typeof findNearbyStores ===
+        "function"
+      ){
+
+        findNearbyStores(
+          latitude,
+          longitude
+        );
+
+      }
 
     },
 
 
+    /*
+     * CHYBA
+     */
+
     function(error){
 
+      console.error(
+        "GPS chyba:",
+        error
+      );
+
+
       let message =
-        "Nepodarilo sa získať tvoju polohu.";
+        "Nepodarilo sa získať polohu.";
 
 
       if(
@@ -147,7 +241,7 @@ function mojaPoloha(){
       ){
 
         message =
-          "Prístup k polohe nebol povolený.";
+          "❌ Prístup k polohe bol zamietnutý. Povoľ polohu pre túto stránku v prehliadači.";
 
       }
 
@@ -158,7 +252,7 @@ function mojaPoloha(){
       ){
 
         message =
-          "Poloha momentálne nie je dostupná.";
+          "❌ Poloha momentálne nie je dostupná.";
 
       }
 
@@ -169,7 +263,15 @@ function mojaPoloha(){
       ){
 
         message =
-          "Získanie polohy trvalo príliš dlho.";
+          "❌ Získanie polohy trvalo príliš dlho.";
+
+      }
+
+
+      if(info){
+
+        info.textContent =
+          message;
 
       }
 
@@ -178,12 +280,17 @@ function mojaPoloha(){
 
     },
 
+
+    /*
+     * NASTAVENIA GPS
+     */
+
     {
       enableHighAccuracy:true,
 
-      timeout:10000,
+      timeout:15000,
 
-      maximumAge:60000
+      maximumAge:0
     }
 
   );
@@ -192,51 +299,34 @@ function mojaPoloha(){
 
 
 /* =====================================================
-   ZOBRAZENIE POUŽÍVATEĽA
+   ZOBRAZENIE SLOVENSKA
 ===================================================== */
 
-function showUserLocation(
-  latitude,
-  longitude
-){
+function showSlovakia(){
 
   if(!map){
     return;
   }
 
 
-  if(userMarker){
+  map.setView(
+    [48.669, 19.699],
+    7
+  );
 
-    map.removeLayer(
-      userMarker
+
+  const info =
+    document.getElementById(
+      "mapInfo"
     );
+
+
+  if(info){
+
+    info.textContent =
+      "🇸🇰 Zobrazené je celé Slovensko.";
 
   }
-
-
-  userMarker =
-    L.marker(
-      [
-        latitude,
-        longitude
-      ]
-    )
-    .addTo(map)
-    .bindPopup(
-      "📍 Tvoja poloha"
-    );
-
-
-  userMarker.openPopup();
-
-
-  map.setView(
-    [
-      latitude,
-      longitude
-    ],
-    14
-  );
 
 }
 
@@ -250,47 +340,54 @@ async function findNearbyStores(
   longitude
 ){
 
-  showMapMessage(
-    "🔎 Hľadám obchody v okolí..."
-  );
-
-
   /*
-   * Overpass vyhľadá:
-   *
-   * Lidl
-   * COOP Jednota
-   * Kaufland
-   * a ďalšie obchody
-   *
-   * v okolí používateľa.
+   * Ak súradnice neprišli,
+   * použijeme aktuálnu GPS polohu.
    */
+
+  if(
+    latitude === undefined ||
+    longitude === undefined
+  ){
+
+    if(
+      !navigator.geolocation
+    ){
+
+      return;
+
+    }
+
+
+    navigator.geolocation.getCurrentPosition(
+      function(position){
+
+        findNearbyStores(
+          position.coords.latitude,
+          position.coords.longitude
+        );
+
+      }
+    );
+
+
+    return;
+
+  }
+
+
+  const radius =
+    5000;
+
 
   const query = `
 
 [out:json][timeout:25];
 
 (
-  node
-    ["shop"="supermarket"]
-    (around:${SEARCH_RADIUS},${latitude},${longitude});
-
-  way
-    ["shop"="supermarket"]
-    (around:${SEARCH_RADIUS},${latitude},${longitude});
-
-  relation
-    ["shop"="supermarket"]
-    (around:${SEARCH_RADIUS},${latitude},${longitude});
-
-  node
-    ["name"~"Lidl|Kaufland|COOP",i]
-    (around:${SEARCH_RADIUS},${latitude},${longitude});
-
-  way
-    ["name"~"Lidl|Kaufland|COOP",i]
-    (around:${SEARCH_RADIUS},${latitude},${longitude});
-
+  node["shop"](around:${radius},${latitude},${longitude});
+  way["shop"](around:${radius},${latitude},${longitude});
+  relation["shop"](around:${radius},${latitude},${longitude});
 );
 
 out center tags;
@@ -319,7 +416,7 @@ out center tags;
     if(!response.ok){
 
       throw new Error(
-        "Overpass API error"
+        "Overpass chyba"
       );
 
     }
@@ -329,16 +426,10 @@ out center tags;
       await response.json();
 
 
-    const stores =
-      processStores(
-        data.elements || [],
-        latitude,
-        longitude
-      );
-
-
-    displayStores(
-      stores
+    showStores(
+      data.elements || [],
+      latitude,
+      longitude
     );
 
 
@@ -349,412 +440,20 @@ out center tags;
     );
 
 
-    showMapMessage(
-      "❌ Obchody sa nepodarilo načítať."
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   SPRACOVANIE OBCHODOV
-===================================================== */
-
-function processStores(
-  elements,
-  userLat,
-  userLng
-){
-
-  const result = [];
-
-  const used = new Set();
-
-
-  elements.forEach(
-    element => {
-
-      const tags =
-        element.tags || {};
-
-
-      let name =
-        tags.name || "";
-
-
-      /*
-       * Ak objekt nemá názov,
-       * preskočíme ho.
-       */
-
-      if(!name){
-        return;
-      }
-
-
-      /*
-       * Niektoré obchody môžu mať
-       * centrum uložené vo way.
-       */
-
-      let latitude =
-        element.lat;
-
-      let longitude =
-        element.lon;
-
-
-      if(
-        latitude === undefined &&
-        element.center
-      ){
-
-        latitude =
-          element.center.lat;
-
-        longitude =
-          element.center.lon;
-
-      }
-
-
-      if(
-        latitude === undefined ||
-        longitude === undefined
-      ){
-
-        return;
-
-      }
-
-
-      /*
-       * Vyberieme iba relevantné
-       * potravinové/supermarketové obchody.
-       */
-
-      const normalizedName =
-        name.toLowerCase();
-
-
-      const isKnownStore =
-        normalizedName.includes("lidl") ||
-        normalizedName.includes("kaufland") ||
-        normalizedName.includes("coop") ||
-        normalizedName.includes("jednota");
-
-
-      const isSupermarket =
-        tags.shop ===
-        "supermarket";
-
-
-      if(
-        !isKnownStore &&
-        !isSupermarket
-      ){
-
-        return;
-
-      }
-
-
-      /*
-       * Určenie značky.
-       */
-
-      let brand =
-        detectBrand(name);
-
-
-      /*
-       * Vzdialenosť.
-       */
-
-      const distance =
-        calculateDistance(
-          userLat,
-          userLng,
-          latitude,
-          longitude
-        );
-
-
-      /*
-       * Odstránenie duplicít.
-       */
-
-      const key =
-        name.toLowerCase() +
-        "_" +
-        latitude.toFixed(5) +
-        "_" +
-        longitude.toFixed(5);
-
-
-      if(
-        used.has(key)
-      ){
-
-        return;
-
-      }
-
-
-      used.add(key);
-
-
-      result.push({
-
-        id:
-          element.id,
-
-        name:
-          name,
-
-        brand:
-          brand,
-
-        lat:
-          latitude,
-
-        lng:
-          longitude,
-
-        distance:
-          distance,
-
-        address:
-          createAddress(tags)
-
-      });
-
-    }
-  );
-
-
-  /*
-   * Najbližšie obchody prvé.
-   */
-
-  result.sort(
-    function(a,b){
-
-      return (
-        a.distance -
-        b.distance
+    const info =
+      document.getElementById(
+        "mapInfo"
       );
 
+
+    if(info){
+
+      info.textContent =
+        "⚠️ Obchody sa momentálne nepodarilo načítať.";
+
     }
-  );
-
-
-  /*
-   * Maximálne 30 výsledkov.
-   */
-
-  return result.slice(
-    0,
-    30
-  );
-
-}
-
-
-/* =====================================================
-   ROZPOZNANIE ZNAČKY
-===================================================== */
-
-function detectBrand(
-  name
-){
-
-  const value =
-    name.toLowerCase();
-
-
-  if(
-    value.includes("lidl")
-  ){
-
-    return "Lidl";
 
   }
-
-
-  if(
-    value.includes("kaufland")
-  ){
-
-    return "Kaufland";
-
-  }
-
-
-  if(
-    value.includes("coop") ||
-    value.includes("jednota")
-  ){
-
-    return "COOP Jednota";
-
-  }
-
-
-  return name;
-
-}
-
-
-/* =====================================================
-   ADRESA
-===================================================== */
-
-function createAddress(
-  tags
-){
-
-  const parts = [];
-
-
-  if(tags["addr:street"]){
-
-    parts.push(
-      tags["addr:street"]
-    );
-
-  }
-
-
-  if(tags["addr:housenumber"]){
-
-    parts.push(
-      tags["addr:housenumber"]
-    );
-
-  }
-
-
-  if(tags["addr:city"]){
-
-    parts.push(
-      tags["addr:city"]
-    );
-
-  }
-
-
-  return parts.join(
-    " "
-  );
-
-}
-
-
-/* =====================================================
-   VZDIALENOSŤ
-===================================================== */
-
-function calculateDistance(
-  lat1,
-  lon1,
-  lat2,
-  lon2
-){
-
-  const R =
-    6371000;
-
-
-  const dLat =
-    degreesToRadians(
-      lat2 - lat1
-    );
-
-
-  const dLon =
-    degreesToRadians(
-      lon2 - lon1
-    );
-
-
-  const a =
-    Math.sin(
-      dLat / 2
-    ) *
-    Math.sin(
-      dLat / 2
-    ) +
-
-    Math.cos(
-      degreesToRadians(lat1)
-    ) *
-
-    Math.cos(
-      degreesToRadians(lat2)
-    ) *
-
-    Math.sin(
-      dLon / 2
-    ) *
-    Math.sin(
-      dLon / 2
-    );
-
-
-  const c =
-    2 *
-    Math.atan2(
-      Math.sqrt(a),
-      Math.sqrt(1-a)
-    );
-
-
-  return R * c;
-
-}
-
-
-function degreesToRadians(
-  degrees
-){
-
-  return (
-    degrees *
-    Math.PI /
-    180
-  );
-
-}
-
-
-/* =====================================================
-   FORMÁT VZDIALENOSTI
-===================================================== */
-
-function formatDistance(
-  meters
-){
-
-  if(
-    meters < 1000
-  ){
-
-    return (
-      Math.round(meters) +
-      " m"
-    );
-
-  }
-
-
-  return (
-    (meters / 1000)
-      .toFixed(1) +
-    " km"
-  );
 
 }
 
@@ -763,129 +462,113 @@ function formatDistance(
    ZOBRAZENIE OBCHODOV
 ===================================================== */
 
-function displayStores(
-  stores
+function showStores(
+  elements,
+  userLat,
+  userLng
 ){
 
-  clearStoreMarkers();
+  /*
+   * Odstránime staré markery obchodov.
+   */
 
+  if(window.storeMarkers){
 
-  if(!stores.length){
-
-    showMapMessage(
-      "😕 V okolí sa nenašli žiadne obchody."
+    window.storeMarkers.forEach(
+      marker => map.removeLayer(marker)
     );
-
-    return;
 
   }
 
 
-  const bounds =
-    [];
+  window.storeMarkers = [];
 
 
-  stores.forEach(
-    store => {
+  elements.forEach(
+    function(element){
+
+      const tags =
+        element.tags || {};
+
+
+      const name =
+        tags.name;
+
+
+      if(!name){
+        return;
+      }
+
+
+      let lat =
+        element.lat;
+
+      let lng =
+        element.lon;
+
+
+      if(
+        lat === undefined &&
+        element.center
+      ){
+
+        lat =
+          element.center.lat;
+
+        lng =
+          element.center.lon;
+
+      }
+
+
+      if(
+        lat === undefined ||
+        lng === undefined
+      ){
+
+        return;
+
+      }
+
 
       const marker =
         L.marker(
-          [
-            store.lat,
-            store.lng
-          ]
+          [lat,lng]
         )
         .addTo(map);
 
 
-      const popup = `
-
-        <div>
-
-          <strong>
-            🛒 ${escapeMapHtml(store.name)}
-          </strong>
-
-          <br>
-
-          📏
-          ${formatDistance(store.distance)}
-
-          ${
-            store.address
-              ? `<br>
-                 📍 ${escapeMapHtml(store.address)}`
-              : ""
-          }
-
-          <br><br>
-
-          <button
-            onclick="selectNearbyStore('${encodeURIComponent(
-              JSON.stringify(store)
-            )}')"
-          >
-            ⭐ Vybrať obchod
-          </button>
-
-        </div>
-
-      `;
-
-
       marker.bindPopup(
-        popup
+        `
+          <strong>🛒 ${escapeMapHtml(name)}</strong>
+          <br><br>
+          <button onclick="vybratObchod('${escapeMapHtml(name)}')">
+            Vybrať obchod
+          </button>
+        `
       );
 
 
-      storeMarkers.push(
+      window.storeMarkers.push(
         marker
-      );
-
-
-      bounds.push(
-        [
-          store.lat,
-          store.lng
-        ]
       );
 
     }
   );
 
 
-  if(
-    userLatitude !== null &&
-    userLongitude !== null
-  ){
-
-    bounds.push(
-      [
-        userLatitude,
-        userLongitude
-      ]
+  const info =
+    document.getElementById(
+      "mapInfo"
     );
 
-  }
 
+  if(info){
 
-  if(
-    bounds.length
-  ){
-
-    map.fitBounds(
-      bounds,
-      {
-        padding:[30,30]
-      }
-    );
+    info.textContent =
+      "🛒 Obchody v okolí sú zobrazené na mape.";
 
   }
-
-
-  showMapMessage(
-    `🛒 Nájdilo sa ${stores.length} obchodov v okolí.`
-  );
 
 }
 
@@ -894,162 +577,31 @@ function displayStores(
    VÝBER OBCHODU
 ===================================================== */
 
-function selectNearbyStore(
-  encodedStore
+function vybratObchod(
+  name
 ){
-
-  try{
-
-    const store =
-      JSON.parse(
-        decodeURIComponent(
-          encodedStore
-        )
-      );
-
-
-    /*
-     * Uložíme vybraný obchod
-     * používateľovi.
-     */
-
-    saveSelectedStore(
-      store
-    );
-
-
-    showMapMessage(
-      "⭐ Vybraný obchod: " +
-      store.name
-    );
-
-
-    /*
-     * Ak existuje tvoja funkcia
-     * selectStore() z app.js,
-     * nastavíme aj obchod v nákupnom
-     * zozname.
-     */
-
-    if(
-      typeof selectStore ===
-      "function"
-    ){
-
-      const supportedStores = [
-        "Lidl",
-        "COOP Jednota",
-        "Kaufland"
-      ];
-
-
-      if(
-        supportedStores.includes(
-          store.brand
-        )
-      ){
-
-        selectStore(
-          store.brand
-        );
-
-      }
-
-    }
-
-
-  }catch(error){
-
-    console.error(
-      error
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   ULOŽENIE VYBRANÉHO OBCHODU
-===================================================== */
-
-function saveSelectedStore(
-  store
-){
-
-  const user =
-    typeof getCurrentUser ===
-    "function"
-      ? getCurrentUser()
-      : null;
-
-
-  if(!user){
-
-    return;
-
-  }
-
-
-  const key =
-    "vybranyObchod_" +
-    user;
-
 
   localStorage.setItem(
-    key,
-    JSON.stringify(
-      store
-    )
-  );
-
-}
-
-
-/* =====================================================
-   VYMAZANIE MARKEROV
-===================================================== */
-
-function clearStoreMarkers(){
-
-  storeMarkers.forEach(
-    marker => {
-
-      if(map){
-
-        map.removeLayer(
-          marker
-        );
-
-      }
-
-    }
+    "vybranyObchod",
+    name
   );
 
 
-  storeMarkers = [];
-
-}
-
-
-/* =====================================================
-   SPRÁVA
-===================================================== */
-
-function showMapMessage(
-  message
-){
-
-  const element =
+  const selected =
     document.getElementById(
-      "selectedStore"
+      "selectedMapStore"
     );
 
 
-  if(element){
+  if(selected){
 
-    element.textContent =
-      message;
+    selected.style.display =
+      "block";
+
+    selected.innerHTML =
+      "⭐ Vybraný obchod: <b>" +
+      escapeMapHtml(name) +
+      "</b>";
 
   }
 
@@ -1057,7 +609,7 @@ function showMapMessage(
 
 
 /* =====================================================
-   OCHRANA HTML
+   OCHRANA TEXTU
 ===================================================== */
 
 function escapeMapHtml(
@@ -1069,10 +621,8 @@ function escapeMapHtml(
       "div"
     );
 
-
   div.textContent =
     text;
-
 
   return div.innerHTML;
 
