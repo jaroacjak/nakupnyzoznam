@@ -1,0 +1,681 @@
+/* =========================================
+   ZÁKLAD
+========================================= */
+
+*{
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+
+  background:#f2f4f7;
+  color:#222;
+
+  font-family:Arial,sans-serif;
+}
+
+button,
+input{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+
+/* =========================================
+   HLAVNÁ APLIKÁCIA
+========================================= */
+
+.app{
+  width:100%;
+  max-width:850px;
+
+  margin:0 auto;
+
+  padding:16px;
+}
+
+.card{
+  background:#fff;
+
+  border-radius:20px;
+
+  padding:20px;
+
+  box-shadow:0 5px 25px #0001;
+
+  margin-bottom:16px;
+}
+
+
+/* =========================================
+   NADPISY
+========================================= */
+
+h1{
+  text-align:center;
+
+  margin:4px 0 20px;
+}
+
+h2{
+  margin:5px 0 15px;
+}
+
+h3{
+  margin:0 0 12px;
+}
+
+
+/* =========================================
+   INPUTY A TLAČIDLÁ
+========================================= */
+
+button,
+input{
+  border-radius:10px;
+
+  padding:10px;
+
+  border:1px solid #ccc;
+}
+
+input{
+  background:#fff;
+  color:#222;
+}
+
+input:focus{
+  outline:none;
+
+  border-color:#222;
+}
+
+button{
+  transition:
+    opacity .15s ease,
+    transform .1s ease;
+}
+
+button:hover{
+  opacity:.9;
+}
+
+button:active{
+  transform:scale(.98);
+}
+
+
+/* =========================================
+   TLAČIDLÁ
+========================================= */
+
+.primary{
+  background:#222;
+
+  color:#fff;
+
+  border:0;
+}
+
+.secondary{
+  background:#eee;
+
+  color:#222;
+
+  border:0;
+}
+
+.danger{
+  background:#d9534f;
+
+  color:#fff;
+
+  border:0;
+}
+
+.back{
+  background:#eee;
+
+  color:#222;
+
+  border:0;
+
+  margin-bottom:15px;
+}
+
+
+/* =========================================
+   SKRYTÉ
+========================================= */
+
+.hidden{
+  display:none!important;
+}
+
+
+/* =========================================
+   PRIHLÁSENIE / REGISTRÁCIA
+========================================= */
+
+.auth-page{
+  min-height:100vh;
+
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  padding:16px;
+}
+
+.auth-card{
+  width:100%;
+  max-width:430px;
+
+  background:#fff;
+
+  border-radius:20px;
+
+  padding:28px;
+
+  box-shadow:0 5px 25px #0001;
+}
+
+.logo{
+  text-align:center;
+
+  font-size:48px;
+
+  margin-bottom:8px;
+}
+
+.auth-card h1{
+  margin:0 0 10px;
+}
+
+.subtitle{
+  text-align:center;
+
+  color:#777;
+
+  margin-bottom:25px;
+}
+
+.form{
+  display:grid;
+
+  gap:12px;
+}
+
+.form input{
+  width:100%;
+
+  padding:12px;
+}
+
+.form button{
+  width:100%;
+
+  padding:12px;
+}
+
+.message{
+  padding:11px;
+
+  border-radius:10px;
+
+  background:#f1f1f1;
+
+  text-align:center;
+
+  margin-bottom:12px;
+
+  font-size:14px;
+}
+
+.auth-link{
+  text-align:center;
+
+  margin-top:20px;
+
+  color:#777;
+}
+
+.auth-link button{
+  width:auto;
+
+  padding:0;
+
+  border:0;
+
+  background:none;
+
+  color:#222;
+
+  font-weight:bold;
+}
+
+.auth-note{
+  font-size:12px;
+
+  color:#888;
+
+  text-align:center;
+
+  margin-top:18px;
+
+  line-height:1.5;
+}
+
+
+/* =========================================
+   POUŽÍVATEĽ
+========================================= */
+
+.user-bar{
+  display:flex;
+
+  justify-content:space-between;
+  align-items:center;
+
+  gap:10px;
+
+  margin-bottom:15px;
+
+  padding-bottom:15px;
+
+  border-bottom:1px solid #eee;
+}
+
+.user-info{
+  color:#666;
+
+  font-size:14px;
+}
+
+
+/* =========================================
+   DÁTUMY
+========================================= */
+
+.date-add{
+  display:flex;
+
+  gap:8px;
+
+  margin-bottom:18px;
+}
+
+.date-add input{
+  flex:1;
+}
+
+.date-list{
+  display:grid;
+
+  gap:10px;
+}
+
+.date-row{
+  display:flex;
+
+  align-items:center;
+  justify-content:space-between;
+
+  gap:10px;
+
+  padding:14px;
+
+  border:1px solid #ddd;
+
+  border-radius:14px;
+
+  background:#fafafa;
+}
+
+.date-info{
+  cursor:pointer;
+
+  flex:1;
+}
+
+.date-info strong{
+  font-size:17px;
+}
+
+.meta{
+  color:#777;
+
+  font-size:14px;
+
+  margin-top:4px;
+}
+
+.actions{
+  display:flex;
+
+  gap:7px;
+}
+
+
+/* =========================================
+   OBCHODY
+========================================= */
+
+.selected-date{
+  font-size:18px;
+
+  font-weight:bold;
+
+  margin-bottom:15px;
+}
+
+.stores{
+  display:flex;
+
+  gap:8px;
+
+  overflow-x:auto;
+
+  padding-bottom:10px;
+
+  margin-bottom:15px;
+}
+
+.store{
+  min-width:105px;
+
+  background:#f1f1f1;
+
+  color:#222;
+
+  border:0;
+
+  white-space:nowrap;
+}
+
+.store.active{
+  background:#222;
+
+  color:#fff;
+}
+
+.shop-title{
+  margin:0 0 12px;
+}
+
+
+/* =========================================
+   PRIDÁVANIE POLOŽKY
+========================================= */
+
+.add-item{
+  display:grid;
+
+  grid-template-columns:
+    1fr
+    90px
+    100px;
+
+  gap:8px;
+
+  margin-bottom:18px;
+}
+
+.add-item input{
+  width:100%;
+}
+
+
+/* =========================================
+   POLOŽKY
+========================================= */
+
+.item{
+  display:flex;
+
+  align-items:center;
+
+  gap:9px;
+
+  padding:12px 0;
+
+  border-bottom:1px solid #eee;
+}
+
+.item.done .item-name{
+  text-decoration:line-through;
+
+  opacity:.5;
+}
+
+.item-name{
+  flex:1;
+
+  word-break:break-word;
+}
+
+
+/* =========================================
+   MNOŽSTVO
+========================================= */
+
+.qty{
+  display:flex;
+
+  align-items:center;
+
+  gap:5px;
+}
+
+.qty button{
+  width:34px;
+  height:34px;
+
+  padding:0;
+
+  background:#eee;
+
+  border:0;
+}
+
+.qty b{
+  min-width:20px;
+
+  text-align:center;
+}
+
+
+/* =========================================
+   ÚPRAVA / VYMAZANIE
+========================================= */
+
+.edit-item{
+  background:#eee;
+
+  color:#222;
+
+  border:0;
+
+  padding:9px 11px;
+}
+
+.delete-item{
+  background:#d9534f;
+
+  color:#fff;
+
+  border:0;
+
+  padding:9px 11px;
+}
+
+
+/* =========================================
+   PRÁZDNY ZOZNAM
+========================================= */
+
+.empty{
+  text-align:center;
+
+  color:#888;
+
+  padding:28px 10px;
+
+  line-height:1.6;
+}
+
+
+/* =========================================
+   SPODNÁ LIŠTA
+========================================= */
+
+.bottom{
+  display:flex;
+
+  justify-content:space-between;
+  align-items:center;
+
+  gap:8px;
+
+  margin-top:18px;
+}
+
+#itemCount{
+  color:#666;
+
+  font-size:14px;
+}
+
+
+/* =========================================
+   POZNÁMKA
+========================================= */
+
+.note{
+  font-size:13px;
+
+  color:#777;
+
+  text-align:center;
+
+  margin-top:14px;
+}
+
+
+/* =========================================
+   SCROLLBAR PRE OBCHODY
+========================================= */
+
+.stores::-webkit-scrollbar{
+  height:6px;
+}
+
+.stores::-webkit-scrollbar-thumb{
+  background:#ccc;
+
+  border-radius:10px;
+}
+
+
+/* =========================================
+   MOBIL
+========================================= */
+
+@media(max-width:600px){
+
+  .app{
+    padding:10px;
+  }
+
+  .card{
+    padding:16px;
+
+    border-radius:16px;
+  }
+
+  .add-item{
+    grid-template-columns:
+      1fr
+      75px;
+  }
+
+  .add-item button{
+    grid-column:1/-1;
+  }
+
+  .date-row{
+    align-items:flex-start;
+
+    flex-direction:column;
+  }
+
+  .actions{
+    width:100%;
+  }
+
+  .actions button{
+    flex:1;
+  }
+
+  .user-bar{
+    align-items:flex-start;
+
+    flex-direction:column;
+  }
+
+  .bottom{
+    align-items:stretch;
+
+    flex-direction:column;
+  }
+
+  .bottom button{
+    width:100%;
+  }
+
+  .item{
+    flex-wrap:wrap;
+  }
+
+  .item-name{
+    min-width:120px;
+  }
+
+}
+
+
+/* =========================================
+   VEĽMI MALÉ DISPLEJE
+========================================= */
+
+@media(max-width:400px){
+
+  .auth-card{
+    padding:20px;
+  }
+
+  .item{
+    gap:6px;
+  }
+
+  .qty button{
+    width:30px;
+    height:30px;
+  }
+
+  .edit-item,
+  .delete-item{
+    padding:8px;
+  }
+
+}
