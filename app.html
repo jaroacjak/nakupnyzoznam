@@ -20,7 +20,7 @@
 
 
 <!-- =====================================================
-     LEAFLET MAPA
+     LEAFLET
 ===================================================== -->
 
 <link
@@ -41,9 +41,9 @@
 
   height:500px;
 
-  border-radius:18px;
-
   margin-top:15px;
+
+  border-radius:18px;
 
   border:1px solid #ddd;
 
@@ -51,38 +51,27 @@
 
 
 /* =====================================================
-   OVLÁDANIE MAPY
+   TLAČIDLO MOJA POLOHA
 ===================================================== */
 
-.map-controls{
+.location-button{
 
-  display:flex;
+  width:100%;
 
-  flex-wrap:wrap;
+  margin-top:10px;
 
-  gap:8px;
-
-  margin-top:12px;
-
-}
-
-
-.map-controls button{
-
-  flex:1;
-
-  min-width:140px;
+  font-size:16px;
 
 }
 
 
 /* =====================================================
-   INFORMÁCIE MAPY
+   INFORMÁCIA O MAPE
 ===================================================== */
 
 .map-info{
 
-  margin-top:12px;
+  margin-top:10px;
 
   padding:12px;
 
@@ -92,6 +81,10 @@
 
 }
 
+
+/* =====================================================
+   VYBRANÝ OBCHOD
+===================================================== */
 
 .selected-map-store{
 
@@ -104,100 +97,6 @@
   border-radius:12px;
 
   background:#eaf7ea;
-
-}
-
-
-/* =====================================================
-   FILTRE OBCHODOV
-===================================================== */
-
-.store-filters{
-
-  display:flex;
-
-  flex-wrap:wrap;
-
-  gap:7px;
-
-  margin-top:12px;
-
-}
-
-
-.store-filter{
-
-  background:#eee;
-
-  border:0;
-
-}
-
-
-.store-filter.active{
-
-  background:#222;
-
-  color:#fff;
-
-}
-
-
-/* =====================================================
-   ZOZNAM OBCHODOV
-===================================================== */
-
-.nearby-stores{
-
-  display:grid;
-
-  gap:8px;
-
-  margin-top:15px;
-
-}
-
-
-.nearby-store{
-
-  display:flex;
-
-  align-items:center;
-
-  gap:10px;
-
-  padding:12px;
-
-  border:1px solid #ddd;
-
-  border-radius:12px;
-
-  background:#fafafa;
-
-}
-
-
-.nearby-store-info{
-
-  flex:1;
-
-}
-
-
-.nearby-store-name{
-
-  font-weight:bold;
-
-}
-
-
-.nearby-store-distance{
-
-  color:#777;
-
-  font-size:13px;
-
-  margin-top:3px;
 
 }
 
@@ -237,31 +136,6 @@
   #map{
 
     height:380px;
-
-  }
-
-
-  .map-controls{
-
-    display:grid;
-
-    grid-template-columns:1fr 1fr;
-
-  }
-
-
-  .map-controls button{
-
-    min-width:0;
-
-  }
-
-
-  .store-filters{
-
-    display:grid;
-
-    grid-template-columns:1fr 1fr;
 
   }
 
@@ -331,7 +205,10 @@
 </h1>
 
 
-<!-- PRIDAŤ DÁTUM -->
+
+<!-- =====================================================
+     PRIDAŤ DÁTUM
+===================================================== -->
 
 <div class="date-add">
 
@@ -353,6 +230,7 @@
 
 
 </div>
+
 
 
 <h2>
@@ -381,7 +259,7 @@
 
 
 <!-- =====================================================
-     MAPA OBCHODOV
+     MAPA
 ===================================================== -->
 
 <section class="card">
@@ -389,170 +267,36 @@
 
 <h2>
 
-  🗺️ Mapa predajní
+  🗺️ Mapa obchodov
 
 </h2>
 
 
 <p class="meta">
 
-  Na mape môžeš vyhľadať predajne
-  a vybrať si obchod pre svoj nákup.
+  Klikni na „Moja poloha“ a povoľ
+  prehliadaču prístup k tvojej polohe.
 
 </p>
 
 
 <!-- =====================================================
-     TLAČIDLÁ
+     MOJA POLOHA
 ===================================================== -->
 
-<div class="map-controls">
+<button
+  class="primary location-button"
+  onclick="mojaPoloha()"
+>
 
+  📍 Moja poloha
 
-  <button
-    class="primary"
-    onclick="mojaPoloha()"
-  >
-
-    📍 Moja poloha
-
-  </button>
-
-
-  <button
-    class="secondary"
-    onclick="showSlovakia()"
-  >
-
-    🇸🇰 Celé Slovensko
-
-  </button>
-
-
-  <button
-    class="secondary"
-    onclick="findNearbyStores()"
-  >
-
-    🔎 Obchody v okolí
-
-  </button>
-
-
-</div>
+</button>
 
 
 
 <!-- =====================================================
-     FILTRE
-===================================================== -->
-
-<h3>
-
-  🏪 Vyber obchod
-
-</h3>
-
-
-<div class="store-filters">
-
-
-  <button
-    class="store-filter active"
-    onclick="filterStores('all')"
-  >
-
-    🏪 Všetky
-
-  </button>
-
-
-  <button
-    class="store-filter"
-    onclick="filterStores('Lidl')"
-  >
-
-    🛒 Lidl
-
-  </button>
-
-
-  <button
-    class="store-filter"
-    onclick="filterStores('COOP')"
-  >
-
-    🛒 COOP Jednota
-
-  </button>
-
-
-  <button
-    class="store-filter"
-    onclick="filterStores('Kaufland')"
-  >
-
-    🛒 Kaufland
-
-  </button>
-
-
-  <button
-    class="store-filter"
-    onclick="filterStores('Tesco')"
-  >
-
-    🛒 Tesco
-
-  </button>
-
-
-  <button
-    class="store-filter"
-    onclick="filterStores('Billa')"
-  >
-
-    🛒 Billa
-
-  </button>
-
-
-  <button
-    class="store-filter"
-    onclick="filterStores('Terno')"
-  >
-
-    🛒 Terno
-
-  </button>
-
-
-  <button
-    class="store-filter"
-    onclick="filterStores('Penny')"
-  >
-
-    🛒 Penny
-
-  </button>
-
-
-  <button
-    class="store-filter"
-    onclick="filterStores('other')"
-  >
-
-    🏪 Ostatné
-
-  </button>
-
-
-</div>
-
-
-
-<!-- =====================================================
-     INFO
+     INFORMÁCIA
 ===================================================== -->
 
 <div
@@ -560,8 +304,7 @@
   class="map-info"
 >
 
-  🗺️ Vyber „Celé Slovensko“
-  alebo „Moja poloha“.
+  📍 Poloha zatiaľ nebola určená.
 
 </div>
 
@@ -585,23 +328,12 @@
 <div id="map"></div>
 
 
-
-<!-- =====================================================
-     ZOZNAM OBCHODOV
-===================================================== -->
-
-<div
-  id="nearbyStores"
-  class="nearby-stores"
-></div>
-
-
 </section>
 
 
 
 <!-- =====================================================
-     DETAIL NÁKUPNÉHO DŇA
+     DETAIL NÁKUPU
 ===================================================== -->
 
 <section
@@ -720,7 +452,7 @@
 
 
 <!-- =====================================================
-     POLOŽKY
+     ZOZNAM POLOŽIEK
 ===================================================== -->
 
 <div
@@ -762,7 +494,7 @@
 
 
 <!-- =====================================================
-     LEAFLET
+     LEAFLET JS
 ===================================================== -->
 
 <script
