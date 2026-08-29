@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>🛒 Registrácia – Nákupný kalendár</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:#f2f4f7;
+  color:#222;
+
+  font-family:Arial,sans-serif;
+
+  padding:16px;
+}
+
+.card{
+  width:100%;
+  max-width:430px;
+
+  background:#fff;
+
+  border-radius:20px;
+
+  padding:28px;
+
+  box-shadow:0 5px 25px #0001;
+}
+
+.logo{
+  text-align:center;
+  font-size:48px;
+  margin-bottom:8px;
+}
+
+h1{
+  text-align:center;
+  margin:0 0 10px;
+}
+
+.subtitle{
+  text-align:center;
+  color:#777;
+  margin-bottom:25px;
+}
+
+.form{
+  display:grid;
+  gap:12px;
+}
+
+input,
+button{
+  width:100%;
+
+  font:inherit;
+
+  border-radius:10px;
+
+  padding:12px;
+
+  border:1px solid #ccc;
+}
+
+input:focus{
+  outline:none;
+  border-color:#222;
+}
+
+button{
+  cursor:pointer;
+}
+
+.primary{
+  background:#222;
+  color:#fff;
+  border:0;
+
+  margin-top:5px;
+}
+
+.primary:hover{
+  opacity:.9;
+}
+
+.message{
+  padding:11px;
+
+  border-radius:10px;
+
+  background:#f1f1f1;
+
+  text-align:center;
+
+  margin-bottom:12px;
+
+  font-size:14px;
+}
+
+.hidden{
+  display:none;
+}
+
+.login{
+  text-align:center;
+
+  margin-top:20px;
+
+  color:#777;
+}
+
+.login button{
+  width:auto;
+
+  padding:0;
+
+  border:0;
+
+  background:none;
+
+  color:#222;
+
+  font-weight:bold;
+}
+
+.note{
+  font-size:12px;
+
+  color:#888;
+
+  text-align:center;
+
+  margin-top:18px;
+
+  line-height:1.5;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <div class="logo">
+    🛒
+  </div>
+
+
+  <h1>
+    Vytvoriť účet
+  </h1>
+
+
+  <div class="subtitle">
+    Zaregistruj sa do nákupného kalendára
+  </div>
+
+
+  <div
+    id="message"
+    class="message hidden"
+  ></div>
+
+
+  <form
+    id="registerForm"
+    class="form"
+  >
+
+    <input
+      id="email"
+      type="email"
+      placeholder="E-mail"
+      autocomplete="email"
+      required
+    >
+
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Heslo"
+      autocomplete="new-password"
+      minlength="6"
+      required
+    >
+
+
+    <input
+      id="password2"
+      type="password"
+      placeholder="Zopakuj heslo"
+      autocomplete="new-password"
+      minlength="6"
+      required
+    >
+
+
+    <button
+      type="submit"
+      class="primary"
+    >
+      👤 Zaregistrovať sa
+    </button>
+
+  </form>
+
+
+  <div class="login">
+
+    Už máš účet?
+
+    <button
+      type="button"
+      onclick="goToLogin()"
+    >
+      Prihlásiť sa
+    </button>
+
+  </div>
+
+
+  <div class="note">
+    Po registrácii budeš automaticky prihlásený
+    a otvorí sa tvoj nákupný kalendár.
+  </div>
+
+</div>
+
+
+<script>
+
+/*
+=========================================
+  ELEMENTY
+=========================================
+*/
+
+const registerForm =
+  document.getElementById(
+    "registerForm"
+  );
+
+const message =
+  document.getElementById(
+    "message"
+  );
+
+
+/*
+=========================================
+  REGISTRÁCIA
+=========================================
+*/
+
+registerForm.addEventListener(
+  "submit",
+  function(event){
+
+    event.preventDefault();
+
+
+    const email =
+      document
+        .getElementById("email")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const password =
+      document
+        .getElementById("password")
+        .value;
+
+
+    const password2 =
+      document
+        .getElementById("password2")
+        .value;
+
+
+    /*
+    -------------------------------------
+      KONTROLA HESIEL
+    -------------------------------------
+    */
+
+    if(password !== password2){
+
+      showMessage(
+        "Heslá sa nezhodujú."
+      );
+
+      return;
+
+    }
+
+
+    /*
+    -------------------------------------
+      KONTROLA DĹŽKY HESLA
+    -------------------------------------
+    */
+
+    if(password.length < 6){
+
+      showMessage(
+        "Heslo musí mať aspoň 6 znakov."
+      );
+
+      return;
+
+    }
+
+
+    /*
+    -------------------------------------
+      NAČÍTANIE EXISTUJÚCICH ÚČTOV
+    -------------------------------------
+    */
+
+    let users = {};
+
+    try{
+
+      users =
+        JSON.parse(
+          localStorage.getItem(
+            "nakupnyPouzivateliaV1"
+          ) || "{}"
+        );
+
+    }catch(error){
+
+      users = {};
+
+    }
+
+
+    /*
+    -------------------------------------
+      KONTROLA EXISTUJÚCEHO ÚČTU
+    -------------------------------------
+    */
+
+    if(users[email]){
+
+      showMessage(
+        "Účet s týmto e-mailom už existuje."
+      );
+
+      return;
+
+    }
+
+
+    /*
+    -------------------------------------
+      VYTVORENIE POUŽÍVATEĽA
+    -------------------------------------
+    */
+
+    users[email] = {
+
+      email: email,
+
+      password: password
+
+    };
+
+
+    /*
+    -------------------------------------
+      ULOŽENIE POUŽÍVATEĽA
+    -------------------------------------
+    */
+
+    localStorage.setItem(
+      "nakupnyPouzivateliaV1",
+      JSON.stringify(users)
+    );
+
+
+    /*
+    -------------------------------------
+      PRIHLÁSENIE
+    -------------------------------------
+    */
+
+    localStorage.setItem(
+      "nakupnyPrihlasenyV1",
+      email
+    );
+
+
+    /*
+    -------------------------------------
+      VYTVORENIE OSOBNEJ DATABÁZY
+    -------------------------------------
+    */
+
+    localStorage.setItem(
+      "nakupnyKalendárV2_" + email,
+      JSON.stringify({})
+    );
+
+
+    /*
+    -------------------------------------
+      PRESMEROVANIE
+    -------------------------------------
+    */
+
+    window.location.href =
+      "index.html";
+
+  }
+);
+
+
+/*
+=========================================
+  ZOBRAZENIE CHYBY
+=========================================
+*/
+
+function showMessage(text){
+
+  message.textContent = text;
+
+  message.classList.remove(
+    "hidden"
+  );
+
+}
+
+
+/*
+=========================================
+  PRECHOD NA PRIHLÁSENIE
+=========================================
+*/
+
+function goToLogin(){
+
+  window.location.href =
+    "login.html";
+
+}
+
+
+/*
+=========================================
+  KONTROLA, ČI UŽ JE PRIHLÁSENÝ
+=========================================
+*/
+
+const loggedUser =
+  localStorage.getItem(
+    "nakupnyPrihlasenyV1"
+  );
+
+
+if(loggedUser){
+
+  let users = {};
+
+  try{
+
+    users =
+      JSON.parse(
+        localStorage.getItem(
+          "nakupnyPouzivateliaV1"
+        ) || "{}"
+      );
+
+  }catch(error){
+
+    users = {};
+
+  }
+
+
+  if(users[loggedUser]){
+
+    window.location.href =
+      "index.html";
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
