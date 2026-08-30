@@ -121,19 +121,13 @@ button{
 .shop-icon{
   width:44px;
   height:44px;
-
   border-radius:50%;
-
   background:#fff;
-
   border:2px solid #222;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   overflow:hidden;
-
   box-shadow:0 2px 8px #0005
 }
 
@@ -197,12 +191,9 @@ button{
   align-items:center;
   justify-content:space-between;
   gap:10px;
-
   padding:14px;
-
   border:1px solid #ddd;
   border-radius:14px;
-
   background:#fafafa
 }
 
@@ -240,9 +231,7 @@ button{
 .stores{
   display:flex;
   gap:8px;
-
   overflow-x:auto;
-
   padding-bottom:10px;
   margin-bottom:15px
 }
@@ -260,12 +249,8 @@ button{
 
 .add-item{
   display:grid;
-
-  grid-template-columns:
-    1fr 90px 100px;
-
+  grid-template-columns:1fr 90px 100px;
   gap:8px;
-
   margin-bottom:18px
 }
 
@@ -273,9 +258,7 @@ button{
   display:flex;
   align-items:center;
   gap:9px;
-
   padding:12px 0;
-
   border-bottom:1px solid #eee
 }
 
@@ -297,11 +280,8 @@ button{
 .qty button{
   width:34px;
   height:34px;
-
   padding:0;
-
   background:#eee;
-
   border:0
 }
 
@@ -723,6 +703,7 @@ function openDate(date){
     localStorage.getItem(
       "poslednyObchod"
     ) || "Lidl";
+
 
   if(
     !STORES.includes(
@@ -1485,7 +1466,7 @@ const PREDAJNE=[
 
 
   /* ======================
-     LIDL
+     LIDL BYTČA
   ====================== */
 
   {
@@ -1522,7 +1503,7 @@ const PREDAJNE=[
 
 
   /* ======================
-     COOP JEDNOTA
+     COOP JEDNOTA BYTČA
   ====================== */
 
   {
@@ -1560,7 +1541,7 @@ const PREDAJNE=[
 
 
   /* ======================
-     KAUFLAND
+     KAUFLAND BYTČA
   ====================== */
 
   {
@@ -1632,6 +1613,44 @@ const PREDAJNE=[
 
     }
 
+  },
+
+
+  /* ======================
+     BILLA BYTČA
+  ====================== */
+
+  {
+
+    id:"billa-bytca",
+
+    nazov:
+      "BILLA Bytča",
+
+    obchod:"Billa",
+
+    adresa:
+      "Hlavná 1363, 014 01 Bytča",
+
+    lat:49.222950,
+
+    lng:18.564807,
+
+    logo:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVxNDirsr9_4_HngNI5eb_mkiL7YeSr26FKiGSKrEL6g&s=10",
+
+    hodiny:{
+
+      1:["07:00","21:00"],
+      2:["07:00","21:00"],
+      3:["07:00","21:00"],
+      4:["07:00","21:00"],
+      5:["07:00","21:00"],
+      6:["07:00","21:00"],
+      0:["08:00","20:00"]
+
+    }
+
   }
 
 ];
@@ -1664,8 +1683,11 @@ function stavPredajne(
   if(!hodiny){
 
     return {
+
       otvorene:false,
+
       text:"🔴 Zatvorené"
+
     };
 
   }
@@ -1967,10 +1989,12 @@ function spustitMapu(){
           ],
 
           {
+
             icon:
               vytvorIkonu(
                 predajna
               )
+
           }
 
         ).addTo(
@@ -2281,7 +2305,7 @@ window.addEventListener(
 
 
 /* ==================================================
-   KAŽDÚ MINÚTU AKTUALIZÁCIA
+   AKTUALIZÁCIA STAVU KAŽDÚ MINÚTU
 ================================================== */
 
 setInterval(
