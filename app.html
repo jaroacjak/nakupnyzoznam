@@ -115,7 +115,7 @@ button{
 
 
 /* =========================
-   IKONA PREDAJNE
+   IKONY PREDAJNÍ
 ========================= */
 
 .shop-icon{
@@ -143,7 +143,7 @@ button{
 ========================= */
 
 .store-popup{
-  min-width:240px;
+  min-width:250px;
   text-align:center
 }
 
@@ -164,6 +164,13 @@ button{
 .store-popup button{
   width:100%;
   margin-top:7px
+}
+
+.hours{
+  text-align:left;
+  font-size:13px;
+  line-height:1.6;
+  margin-top:5px
 }
 
 
@@ -536,6 +543,7 @@ const STORES=[
   "COOP Jednota",
   "Terno",
   "Penny",
+  "Koruna Potraviny",
   "Iné"
 ];
 
@@ -546,7 +554,6 @@ let database=
       "nakupnyKalendárV2"
     ) || "{}"
   );
-
 
 let currentDate=null;
 let currentStore=null;
@@ -841,14 +848,10 @@ function renderDates(){
     el.innerHTML=
       `
       <div class="empty">
-
         Zatiaľ nemáš žiadny
         nákupný zoznam.
-
         <br>
-
         Vyber dátum a pridaj ho.
-
       </div>
       `;
 
@@ -942,7 +945,7 @@ function renderDates(){
 
 
 /* ==================================================
-   VYKRESLIŤ OBCHODY
+   OBCHOD
 ================================================== */
 
 function renderStores(){
@@ -980,10 +983,6 @@ function renderStores(){
 
 }
 
-
-/* ==================================================
-   VYBRAŤ OBCHOD
-================================================== */
 
 function selectStore(store){
 
@@ -1261,10 +1260,8 @@ function renderItems(){
     list.innerHTML=
       `
       <div class="empty">
-
         V tomto obchode
         zatiaľ nič nemáš.
-
       </div>
       `;
 
@@ -1297,11 +1294,9 @@ function renderItems(){
 
 
           <span class="item-name">
-
             ${escapeHtml(
               item.name
             )}
-
           </span>
 
 
@@ -1437,10 +1432,6 @@ document
   );
 
 
-/* ==================================================
-   DNES
-================================================== */
-
 const today=
   new Date()
     .toISOString()
@@ -1464,13 +1455,11 @@ renderDates();
 
 const PREDAJNE=[
 
-
   /* ======================
      LIDL BYTČA
   ====================== */
 
   {
-
     id:"lidl-bytca",
 
     nazov:"Lidl Bytča",
@@ -1488,7 +1477,6 @@ const PREDAJNE=[
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIuwFw2691OFu2tnBQLkZoPmRO12gnJ3FZa5H_jAApvw&s=10",
 
     hodiny:{
-
       1:["07:00","21:00"],
       2:["07:00","21:00"],
       3:["07:00","21:00"],
@@ -1496,9 +1484,7 @@ const PREDAJNE=[
       5:["07:00","21:00"],
       6:["07:00","21:00"],
       0:["08:00","20:00"]
-
     }
-
   },
 
 
@@ -1507,11 +1493,9 @@ const PREDAJNE=[
   ====================== */
 
   {
-
     id:"coop-bytca",
 
-    nazov:
-      "COOP Jednota Bytča",
+    nazov:"COOP Jednota Bytča",
 
     obchod:"COOP Jednota",
 
@@ -1526,7 +1510,6 @@ const PREDAJNE=[
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
 
     hodiny:{
-
       1:["05:45","18:00"],
       2:["05:45","18:00"],
       3:["05:45","18:00"],
@@ -1534,9 +1517,7 @@ const PREDAJNE=[
       5:["05:45","18:00"],
       6:["05:45","13:00"],
       0:["07:30","12:00"]
-
     }
-
   },
 
 
@@ -1545,7 +1526,6 @@ const PREDAJNE=[
   ====================== */
 
   {
-
     id:"kaufland-bytca",
 
     nazov:"Kaufland Bytča",
@@ -1563,7 +1543,6 @@ const PREDAJNE=[
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHgo_B_QJiQ-opGdnYZm8cMirVNIWBhehckLea9EJRmg&s=10",
 
     hodiny:{
-
       1:["07:00","21:00"],
       2:["07:00","21:00"],
       3:["07:00","21:00"],
@@ -1571,25 +1550,20 @@ const PREDAJNE=[
       5:["07:00","21:00"],
       6:["07:00","21:00"],
       0:["08:00","20:00"]
-
     }
-
   },
 
 
   /* ======================
-     KORUNA POTRAVINY
+     KORUNA POTRAVINY 1
   ====================== */
 
   {
+    id:"koruna-potraviny-bytca-1",
 
-    id:"koruna-potraviny-bytca",
+    nazov:"Koruna Potraviny",
 
-    nazov:
-      "Koruna Potraviny",
-
-    obchod:
-      "Koruna Potraviny",
+    obchod:"Koruna Potraviny",
 
     adresa:
       "Komenského 5, 014 01 Bytča",
@@ -1602,7 +1576,6 @@ const PREDAJNE=[
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt9pQfLGEs_tQf5ibTwOy4DkQe8Fr3QbafzXBxWlMk9A&s=10",
 
     hodiny:{
-
       1:["06:00","19:00"],
       2:["06:00","19:00"],
       3:["06:00","19:00"],
@@ -1610,9 +1583,7 @@ const PREDAJNE=[
       5:["06:00","19:00"],
       6:["06:00","14:00"],
       0:["07:00","12:00"]
-
     }
-
   },
 
 
@@ -1621,11 +1592,9 @@ const PREDAJNE=[
   ====================== */
 
   {
-
     id:"billa-bytca",
 
-    nazov:
-      "BILLA Bytča",
+    nazov:"BILLA Bytča",
 
     obchod:"Billa",
 
@@ -1640,7 +1609,6 @@ const PREDAJNE=[
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVxNDirsr9_4_HngNI5eb_mkiL7YeSr26FKiGSKrEL6g&s=10",
 
     hodiny:{
-
       1:["07:00","21:00"],
       2:["07:00","21:00"],
       3:["07:00","21:00"],
@@ -1648,9 +1616,40 @@ const PREDAJNE=[
       5:["07:00","21:00"],
       6:["07:00","21:00"],
       0:["08:00","20:00"]
-
     }
+  },
 
+
+  /* ======================
+     KORUNA POTRAVINY 2
+  ====================== */
+
+  {
+    id:"koruna-potraviny-bytca-2",
+
+    nazov:"Koruna Potraviny",
+
+    obchod:"Koruna Potraviny",
+
+    adresa:
+      "Bytča",
+
+    lat:49.221383,
+
+    lng:18.559506,
+
+    logo:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt9pQfLGEs_tQf5ibTwOy4DkQe8Fr3QbafzXBxWlMk9A&s=10",
+
+    hodiny:{
+      1:["06:00","17:00"],
+      2:["06:00","17:00"],
+      3:["06:00","17:00"],
+      4:["06:00","17:00"],
+      5:["07:00","18:00"],
+      6:["06:45","12:30"],
+      0:null
+    }
   }
 
 ];
@@ -1661,19 +1660,14 @@ const PREDAJNE=[
    STAV PREDAJNE
 ================================================== */
 
-function stavPredajne(
-  predajna
-){
+function stavPredajne(predajna){
 
-  const teraz=
-    new Date();
+  const teraz=new Date();
 
-  const den=
-    teraz.getDay();
+  const den=teraz.getDay();
 
   const cas=
-    teraz.getHours()*60
-    +
+    teraz.getHours()*60+
     teraz.getMinutes();
 
   const hodiny=
@@ -1683,11 +1677,8 @@ function stavPredajne(
   if(!hodiny){
 
     return {
-
       otvorene:false,
-
       text:"🔴 Zatvorené"
-
     };
 
   }
@@ -1698,7 +1689,6 @@ function stavPredajne(
       .split(":")
       .map(Number);
 
-
   const doCas=
     hodiny[1]
       .split(":")
@@ -1708,7 +1698,6 @@ function stavPredajne(
   const odMin=
     od[0]*60+
     od[1];
-
 
   const doMin=
     doCas[0]*60+
@@ -1721,14 +1710,11 @@ function stavPredajne(
 
 
   return {
-
     otvorene:otvorene,
-
     text:
       otvorene
         ? "🟢 Otvorené"
         : "🔴 Zatvorené"
-
   };
 
 }
@@ -1738,31 +1724,50 @@ function stavPredajne(
    OTVÁRACIE HODINY
 ================================================== */
 
-function formatHodiny(
-  predajna
-){
+function formatHodiny(predajna){
+
+  const dni=[
+    ["0","Nedeľa"],
+    ["1","Pondelok"],
+    ["2","Utorok"],
+    ["3","Streda"],
+    ["4","Štvrtok"],
+    ["5","Piatok"],
+    ["6","Sobota"]
+  ];
+
 
   return `
 
-    <div>
-      <b>Po–Pi:</b>
-      ${predajna.hodiny[1][0]}
-      –
-      ${predajna.hodiny[1][1]}
-    </div>
+    <div class="hours">
 
-    <div>
-      <b>Sobota:</b>
-      ${predajna.hodiny[6][0]}
-      –
-      ${predajna.hodiny[6][1]}
-    </div>
+      ${dni.map(
+        ([cislo,nazov])=>{
 
-    <div>
-      <b>Nedeľa:</b>
-      ${predajna.hodiny[0][0]}
-      –
-      ${predajna.hodiny[0][1]}
+          const h=
+            predajna.hodiny[cislo];
+
+          if(!h){
+
+            return `
+              <div>
+                <b>${nazov}:</b>
+                Zatvorené
+              </div>
+            `;
+
+          }
+
+          return `
+            <div>
+              <b>${nazov}:</b>
+              ${h[0]} – ${h[1]}
+            </div>
+          `;
+
+        }
+      ).join("")}
+
     </div>
 
   `;
@@ -1780,12 +1785,10 @@ let markerMojaPoloha=null;
 
 
 /* ==================================================
-   IKONA
+   IKONA PREDAJNE
 ================================================== */
 
-function vytvorIkonu(
-  predajna
-){
+function vytvorIkonu(predajna){
 
   return L.divIcon({
 
@@ -1818,12 +1821,10 @@ function vytvorIkonu(
 
 
 /* ==================================================
-   POPUP
+   POPUP PREDAJNE
 ================================================== */
 
-function vytvorPopup(
-  predajna
-){
+function vytvorPopup(predajna){
 
   const stav=
     stavPredajne(
@@ -1867,8 +1868,7 @@ function vytvorPopup(
       </p>
 
       <p>
-        🕒
-        <b>Otváracie hodiny</b>
+        🕒 <b>Otváracie hodiny</b>
       </p>
 
       ${formatHodiny(
@@ -1920,7 +1920,7 @@ function spustitMapu(){
         "mapStatus"
       )
       .textContent=
-        "⚠️ Mapa sa nenačítala.";
+        "⚠️ Leaflet mapa sa nenačítala.";
 
     return;
 
@@ -1989,12 +1989,10 @@ function spustitMapu(){
           ],
 
           {
-
             icon:
               vytvorIkonu(
                 predajna
               )
-
           }
 
         ).addTo(
@@ -2083,12 +2081,10 @@ function mojaPoloha(){
       markerMojaPoloha=
 
         L.marker(
-
           [
             lat,
             lng
           ]
-
         ).addTo(
           mapa
         );
@@ -2123,26 +2119,31 @@ function mojaPoloha(){
     },
 
 
-    function(){
+    function(error){
+
+      let text=
+        "⚠️ Poloha sa nepodarila získať.";
+
+      if(error.code===1){
+
+        text=
+          "⚠️ Povoľ prehliadaču prístup k polohe.";
+
+      }
 
       document
         .getElementById(
           "mapStatus"
         )
-        .textContent=
-          "⚠️ Povoľ prehliadaču prístup k polohe.";
+        .textContent=text;
 
     },
 
 
     {
-
       enableHighAccuracy:true,
-
       timeout:15000,
-
       maximumAge:0
-
     }
 
   );
@@ -2160,7 +2161,6 @@ function navigovat(
 ){
 
   const url=
-
     "https://www.google.com/maps/dir/?api=1&destination="
     +
     lat
@@ -2216,7 +2216,7 @@ function vybratObchodZMapy(
 
 
 /* ==================================================
-   OBNOVA STAVU PREDAJNE
+   AKTUALIZÁCIA OTVORENÉ/ZATVORENÉ
 ================================================== */
 
 function obnovitStavy(){
@@ -2228,13 +2228,13 @@ function obnovitStavy(){
     layer=>{
 
       if(
-
         layer instanceof L.Marker
         &&
         layer.getLatLng
         &&
+        layer.getPopup
+        &&
         layer.getPopup()
-
       ){
 
         const pozicia=
@@ -2242,32 +2242,26 @@ function obnovitStavy(){
 
 
         const predajna=
-
           PREDAJNE.find(
             p=>
-
               Math.abs(
                 p.lat-
                 pozicia.lat
-              ) < 0.000001
-
+              )<0.000001
               &&
-
               Math.abs(
                 p.lng-
                 pozicia.lng
-              ) < 0.000001
+              )<0.000001
           );
 
 
         if(predajna){
 
           layer.setPopupContent(
-
             vytvorPopup(
               predajna
             )
-
           );
 
         }
@@ -2285,9 +2279,7 @@ function obnovitStavy(){
 ================================================== */
 
 window.addEventListener(
-
   "load",
-
   function(){
 
     setTimeout(
@@ -2300,12 +2292,11 @@ window.addEventListener(
     );
 
   }
-
 );
 
 
 /* ==================================================
-   AKTUALIZÁCIA STAVU KAŽDÚ MINÚTU
+   KAŽDÚ MINÚTU AKTUALIZUJ OTVORENÉ/ZATVORENÉ
 ================================================== */
 
 setInterval(
