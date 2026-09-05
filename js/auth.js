@@ -5,21 +5,34 @@
 */
 
 
-const {
-  Client,
-  Account,
-  ID
-} = Appwrite;
+console.log("Načítavam Appwrite...");
+
+
+/*
+=========================================
+  KONTROLA SDK
+=========================================
+*/
+
+if(typeof Appwrite === "undefined"){
+
+  console.error(
+    "Appwrite SDK sa nepodarilo načítať!"
+  );
+
+}
 
 
 
 /*
 =========================================
-  CLIENT
+  APPWRITE CLIENT
 =========================================
 */
 
-const client = new Client();
+const client =
+  new Appwrite.Client();
+
 
 
 client
@@ -39,7 +52,15 @@ client
 */
 
 const account =
-  new Account(client);
+  new Appwrite.Account(
+    client
+  );
+
+
+
+console.log(
+  "Appwrite je pripravený."
+);
 
 
 
@@ -47,9 +68,6 @@ const account =
 =========================================
   REGISTRÁCIA
 =========================================
-
-  email
-  password
 */
 
 async function registerUser(
@@ -61,15 +79,31 @@ async function registerUser(
   try{
 
 
-    const user =
+    console.log(
+      "Registrujem:",
+      email
+    );
 
+
+    const user =
       await account.create(
-        ID.unique(),
+
+        Appwrite.ID.unique(),
+
         email,
+
         password,
+
         name
+
       );
 
+
+
+    console.log(
+      "Registrácia úspešná:",
+      user
+    );
 
 
     return {
@@ -85,7 +119,7 @@ async function registerUser(
 
 
     console.error(
-      "Chyba registrácie:",
+      "CHYBA REGISTRÁCIE:",
       error
     );
 
@@ -120,17 +154,28 @@ async function loginUser(
   try{
 
 
+    console.log(
+      "Prihlasujem:",
+      email
+    );
+
+
     /*
-      Vytvorenie e-mailovej session
+      Vytvorenie session
     */
 
     const session =
-
       await account.createEmailPasswordSession(
         email,
         password
       );
 
+
+
+    console.log(
+      "Prihlásenie úspešné:",
+      session
+    );
 
 
     return {
@@ -146,7 +191,7 @@ async function loginUser(
 
 
     console.error(
-      "Chyba prihlásenia:",
+      "CHYBA PRIHLÁSENIA:",
       error
     );
 
@@ -179,14 +224,31 @@ async function getCurrentUser(){
 
 
     const user =
-
       await account.get();
+
+
+    console.log(
+      "Prihlásený používateľ:",
+      user
+    );
 
 
     return user;
 
 
   }catch(error){
+
+
+    /*
+      Toto nie je vážna chyba.
+
+      Znamená to iba,
+      že používateľ nie je prihlásený.
+    */
+
+    console.log(
+      "Používateľ nie je prihlásený."
+    );
 
 
     return null;
@@ -209,12 +271,13 @@ async function logoutUser(){
   try{
 
 
-    /*
-      Vymažeme aktuálnu session
-    */
-
     await account.deleteSession(
       "current"
+    );
+
+
+    console.log(
+      "Používateľ bol odhlásený."
     );
 
 
@@ -229,7 +292,7 @@ async function logoutUser(){
 
 
     console.error(
-      "Chyba odhlásenia:",
+      "CHYBA ODHLÁSENIA:",
       error
     );
 
@@ -254,12 +317,10 @@ async function logoutUser(){
 =========================================
   OCHRANA APP.HTML
 =========================================
-
-  Ak používateľ nie je prihlásený,
-  presmeruje ho na login.html.
 */
 
 async function requireLogin(){
+
 
   const user =
     await getCurrentUser();
@@ -267,6 +328,11 @@ async function requireLogin(){
 
 
   if(!user){
+
+
+    console.log(
+      "Neprihlásený používateľ."
+    );
 
 
     window.location.href =
@@ -282,54 +348,66 @@ async function requireLogin(){
 
   return user;
 
+
 }
 
 
 
 /*
 =========================================
-  SPRÁVY CHÝB
+  SPRACOVANIE CHÝB
 =========================================
 */
 
 function getErrorMessage(error){
 
 
+  console.log(
+    "Appwrite Error Code:",
+    error.code
+  );
+
+
+  console.log(
+    "Appwrite Error Message:",
+    error.message
+  );
+
+
+
   /*
     Účet už existuje
   */
 
-  if(
-    error.code === 409
-  ){
+  if(error.code === 409){
 
-    return "Účet s týmto e-mailom už existuje.";
-
-  }
-
-
-
-  /*
-    Nesprávne údaje
-  */
-
-  if(
-    error.code === 401
-  ){
-
-    return "Nesprávny e-mail alebo heslo.";
+    return (
+      "Účet s týmto e-mailom už existuje."
+    );
 
   }
 
 
 
   /*
-    Príliš krátke heslo
+    Nesprávne heslo
   */
 
-  if(
-    error.code === 400
-  ){
+  if(error.code === 401){
+
+    return (
+      "Nesprávny e-mail alebo heslo."
+    );
+
+  }
+
+
+
+  /*
+    Neplatné údaje
+  */
+
+  if(error.code === 400){
 
     return (
       error.message ||
@@ -341,12 +419,28 @@ function getErrorMessage(error){
 
 
   /*
-    Internet alebo Appwrite
+    Chyba siete
   */
 
   if(
-    error.message
+    error.message &&
+    error.message.toLowerCase()
+      .includes("fetch")
   ){
+
+    return (
+      "Načítanie zlyhalo. Skontroluj internetové pripojenie."
+    );
+
+  }
+
+
+
+  /*
+    Iná chyba
+  */
+
+  if(error.message){
 
     return error.message;
 
