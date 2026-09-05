@@ -1,103 +1,390 @@
 <!DOCTYPE html>
 <html lang="sk">
-
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Appwrite – Nákupný zoznam</title>
 
-<meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-<title>Appwrite Test</title>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #f2f4f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
 
+    .card {
+      width: 100%;
+      max-width: 650px;
+      background: white;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    .info {
+      background: #f7f7f7;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      word-break: break-word;
+    }
+
+    .info p {
+      margin: 8px 0;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    #status {
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 15px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .waiting {
+      background: #fff3cd;
+      color: #664d03;
+    }
+
+    .success {
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #842029;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #222;
+      color: white;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .small {
+      margin-top: 20px;
+      color: #777;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    code {
+      background: #eee;
+      padding: 2px 5px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 
 <body>
 
-<h1>Test Appwrite</h1>
+  <div class="card">
 
-<p id="status">
-Načítavam...
-</p>
+    <h1>🧪 Test Appwrite</h1>
+
+    <div class="subtitle">
+      Nákupný zoznam
+    </div>
+
+    <div class="info">
+      <p>
+        <span class="label">Project ID:</span><br>
+        6a9c24ee00187d95fe1d
+      </p>
+
+      <p>
+        <span class="label">Project:</span><br>
+        Nákupný zoznam
+      </p>
+
+      <p>
+        <span class="label">Endpoint:</span><br>
+        https://fra.cloud.appwrite.io/v1
+      </p>
+
+      <p>
+        <span class="label">Aktuálna stránka:</span><br>
+        <span id="currentUrl"></span>
+      </p>
+    </div>
+
+    <div id="status" class="waiting">
+      ⏳ Testujem pripojenie k Appwrite...
+    </div>
+
+    <button type="button" onclick="testAppwrite()">
+      🔄 Spustiť test znova
+    </button>
+
+    <div class="small">
+      Ak sa zobrazí <code>Failed to fetch</code>, problém je zvyčajne
+      v pripojení, CORS/Web Platform nastavení alebo v spôsobe otvorenia
+      HTML súboru.
+    </div>
+
+  </div>
+
+  <!-- Appwrite SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+
+  <script>
+    // ==========================================
+    // APPWRITE NASTAVENIE
+    // ==========================================
+
+    const APPWRITE_ENDPOINT =
+      "https://fra.cloud.appwrite.io/v1";
+
+    const APPWRITE_PROJECT_ID =
+      "6a9c24ee00187d95fe1d";
 
 
-<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+    // ==========================================
+    // VYTVORENIE APPWRITE KLIENTA
+    // ==========================================
+
+    let client = null;
+    let account = null;
 
 
-<script>
+    function initializeAppwrite() {
+
+      try {
+
+        if (typeof Appwrite === "undefined") {
+
+          throw new Error(
+            "Appwrite SDK sa nenačítalo."
+          );
+
+        }
+
+        client = new Appwrite.Client();
+
+        client
+          .setEndpoint(APPWRITE_ENDPOINT)
+          .setProject(APPWRITE_PROJECT_ID);
+
+        account = new Appwrite.Account(client);
+
+        return true;
+
+      } catch (error) {
+
+        console.error(
+          "Chyba pri inicializácii Appwrite:",
+          error
+        );
+
+        return false;
+      }
+    }
 
 
-const status =
-  document.getElementById("status");
+    // ==========================================
+    // ZOBRAZENIE SPRÁVY
+    // ==========================================
+
+    function showStatus(type, message) {
+
+      const status =
+        document.getElementById("status");
+
+      status.className = type;
+
+      status.textContent = message;
+    }
 
 
-async function testAppwrite(){
+    // ==========================================
+    // HLAVNÝ TEST APPWRITE
+    // ==========================================
 
-  try{
+    async function testAppwrite() {
 
-
-    status.textContent =
-      "Pripájam sa na Appwrite...";
-
-
-    const client =
-      new Appwrite.Client();
-
-
-    client
-      .setEndpoint(
-        "https://fra.cloud.appwrite.io/v1"
-      )
-      .setProject(
-        "6a9c24ee00187d95fe1d"
+      showStatus(
+        "waiting",
+        "⏳ Pripájam sa k Appwrite..."
       );
 
+      const initialized =
+        initializeAppwrite();
 
-    const account =
-      new Appwrite.Account(client);
+      if (!initialized) {
 
+        showStatus(
+          "error",
+          "❌ Appwrite SDK sa nepodarilo inicializovať."
+        );
 
-    await account.get();
-
-
-    status.textContent =
-      "✅ Appwrite funguje a používateľ je prihlásený.";
-
-
-  }catch(error){
-
-
-    console.error(error);
+        return;
+      }
 
 
-    status.innerHTML =
+      try {
 
-      "❌ Chyba:<br><br>"
-      +
-      "Message: "
-      +
-      error.message
-      +
-      "<br><br>"
-      +
-      "Code: "
-      +
-      error.code
-      +
-      "<br><br>"
-      +
-      "Type: "
-      +
-      error.type;
+        console.log(
+          "Appwrite endpoint:",
+          APPWRITE_ENDPOINT
+        );
+
+        console.log(
+          "Appwrite project:",
+          APPWRITE_PROJECT_ID
+        );
 
 
-  }
+        // ======================================
+        // TEST ACCOUNT.GET()
+        // ======================================
 
-}
+        const user =
+          await account.get();
 
 
-testAppwrite();
+        // ======================================
+        // ÚSPECH
+        // ======================================
+
+        showStatus(
+          "success",
+          "✅ Appwrite funguje!\n\n" +
+          "Používateľ je prihlásený.\n\n" +
+          "ID: " +
+          (user.$id || "neuvedené") +
+          "\n\n" +
+          "Email: " +
+          (user.email || "neuvedené") +
+          "\n\n" +
+          "Meno: " +
+          (user.name || "neuvedené")
+        );
 
 
-</script>
+        console.log(
+          "Prihlásený používateľ:",
+          user
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "APPWRITE ERROR:",
+          error
+        );
+
+
+        // ======================================
+        // PRESNÁ CHYBA
+        // ======================================
+
+        const message =
+          error && error.message
+            ? error.message
+            : "Neznáma chyba";
+
+
+        const code =
+          error && error.code !== undefined
+            ? error.code
+            : "undefined";
+
+
+        const type =
+          error && error.type !== undefined
+            ? error.type
+            : "undefined";
+
+
+        showStatus(
+          "error",
+          "❌ Chyba Appwrite\n\n" +
+          "Message: " +
+          message +
+          "\n\n" +
+          "Code: " +
+          code +
+          "\n\n" +
+          "Type: " +
+          type +
+          "\n\n" +
+          "URL stránky:\n" +
+          window.location.href +
+          "\n\n" +
+          "Origin:\n" +
+          window.location.origin
+        );
+
+      }
+    }
+
+
+    // ==========================================
+    // AKTUÁLNA URL
+    // ==========================================
+
+    document.getElementById(
+      "currentUrl"
+    ).textContent =
+      window.location.href;
+
+
+    // ==========================================
+    // SPUSTENIE TESTU PO NAČÍTANÍ STRÁNKY
+    // ==========================================
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+        testAppwrite();
+
+      }
+    );
+
+  </script>
 
 </body>
-
 </html>
+
+Dôležité: nič z hlavnej aplikácie týmto nemažeme. Toto je iba samostatný testovací súbor.
+
+Po otvorení "test-appwrite.html" mi pošli celý červený text, ktorý sa zobrazí pod „Chyba Appwrite“. Podľa "Message", "Code", "Type", "URL stránky" a "Origin" vieme presne určiť, prečo máš "Failed to fetch".
