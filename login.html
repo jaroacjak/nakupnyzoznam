@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html lang="sk">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
 <title>🔑 Prihlásenie – Nákupný kalendár</title>
+
 
 <style>
 
@@ -15,21 +22,29 @@
 body{
   margin:0;
   min-height:100vh;
+
   display:flex;
   align-items:center;
   justify-content:center;
+
   background:#f2f4f7;
   color:#222;
+
   font-family:Arial,sans-serif;
+
   padding:16px;
 }
 
 .card{
   width:100%;
   max-width:430px;
+
   background:#fff;
+
   border-radius:20px;
+
   padding:28px;
+
   box-shadow:0 5px 25px #0001;
 }
 
@@ -52,9 +67,13 @@ h1{
 input,
 button{
   width:100%;
+
   font:inherit;
+
   border-radius:10px;
+
   padding:12px;
+
   border:1px solid #ccc;
 }
 
@@ -78,6 +97,11 @@ button{
   opacity:.9;
 }
 
+.primary:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
 .message{
   padding:11px;
   border-radius:10px;
@@ -85,6 +109,16 @@ button{
   text-align:center;
   margin-bottom:12px;
   font-size:14px;
+}
+
+.message.error{
+  background:#ffe5e5;
+  color:#b00000;
+}
+
+.message.success{
+  background:#e3f7e8;
+  color:#176b2c;
 }
 
 .hidden{
@@ -113,21 +147,30 @@ button{
 }
 
 </style>
+
 </head>
+
 
 <body>
 
+
 <div class="card">
+
 
   <div class="logo">
     🛒
   </div>
 
-  <h1>Nákupný kalendár</h1>
+
+  <h1>
+    Nákupný kalendár
+  </h1>
+
 
   <div class="subtitle">
     Prihlás sa do svojho účtu
   </div>
+
 
 
   <div
@@ -136,10 +179,12 @@ button{
   ></div>
 
 
+
   <form
     id="loginForm"
     class="form"
   >
+
 
     <input
       id="email"
@@ -149,6 +194,7 @@ button{
       required
     >
 
+
     <input
       id="password"
       type="password"
@@ -157,14 +203,18 @@ button{
       required
     >
 
+
     <button
+      id="loginButton"
       type="submit"
       class="primary"
     >
       🔑 Prihlásiť sa
     </button>
 
+
   </form>
+
 
 
   <div class="register">
@@ -172,6 +222,7 @@ button{
     Nemáš ešte účet?
 
     <button
+      type="button"
       onclick="goToRegister()"
     >
       Zaregistrovať sa
@@ -179,10 +230,54 @@ button{
 
   </div>
 
+
 </div>
 
 
+
+<!-- =====================================
+     APPWRITE SDK
+===================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+
+
+
+<!-- =====================================
+     AUTENTIFIKÁCIA
+===================================== -->
+
+<script src="js/auth.js"></script>
+
+
+
 <script>
+
+
+/*
+=========================================
+  ELEMENTY
+=========================================
+*/
+
+const loginForm =
+  document.getElementById(
+    "loginForm"
+  );
+
+
+const message =
+  document.getElementById(
+    "message"
+  );
+
+
+const loginButton =
+  document.getElementById(
+    "loginButton"
+  );
+
+
 
 /*
 =========================================
@@ -190,72 +285,63 @@ button{
 =========================================
 */
 
-const loginForm=
-  document.getElementById("loginForm");
-
-const message=
-  document.getElementById("message");
-
-
 loginForm.addEventListener(
+
   "submit",
-  function(event){
+
+  async function(event){
 
     event.preventDefault();
 
 
-    const email=
+
+    /*
+    -------------------------------------
+      E-MAIL
+    -------------------------------------
+    */
+
+    const email =
+
       document
-        .getElementById("email")
+        .getElementById(
+          "email"
+        )
         .value
         .trim()
         .toLowerCase();
 
 
-    const password=
+
+    /*
+    -------------------------------------
+      HESLO
+    -------------------------------------
+    */
+
+    const password =
+
       document
-        .getElementById("password")
+        .getElementById(
+          "password"
+        )
         .value;
 
 
-    /*
-      Používatelia sú zatiaľ uložené
-      v localStorage.
-    */
-
-    const users=
-      JSON.parse(
-        localStorage.getItem(
-          "nakupnyPouzivateliaV1"
-        ) || "{}"
-      );
-
 
     /*
-      Kontrola účtu
-    */
-
-    if(!users[email]){
-
-      showMessage(
-        "Účet s týmto e-mailom neexistuje."
-      );
-
-      return;
-
-    }
-
-
-    /*
-      Kontrola hesla
+    -------------------------------------
+      KONTROLA APPWRITE
+    -------------------------------------
     */
 
     if(
-      users[email].password !== password
+      typeof loginUser !== "function"
     ){
 
       showMessage(
-        "Nesprávne heslo."
+        "Appwrite sa nepodarilo načítať.",
+        "error"
       );
 
       return;
@@ -263,92 +349,239 @@ loginForm.addEventListener(
     }
 
 
+
     /*
-      Prihlásenie
+    -------------------------------------
+      BLOKOVANIE TLAČIDLA
+    -------------------------------------
     */
 
-    localStorage.setItem(
-      "nakupnyPrihlasenyV1",
-      email
+    loginButton.disabled = true;
+
+
+    loginButton.textContent =
+      "⏳ Prihlasujem...";
+
+
+
+    showMessage(
+      "Kontrolujem údaje...",
+      ""
     );
 
 
-    /*
-      Presmerovanie
-      do hlavnej aplikácie
-    */
 
-    window.location.href="index.html";
+    try{
+
+
+      /*
+      -----------------------------------
+        PRIHLÁSENIE CEZ APPWRITE
+      -----------------------------------
+      */
+
+      const result =
+
+        await loginUser(
+          email,
+          password
+        );
+
+
+
+      /*
+      -----------------------------------
+        NEÚSPEŠNÉ PRIHLÁSENIE
+      -----------------------------------
+      */
+
+      if(!result.success){
+
+        showMessage(
+          result.message ||
+          "Nesprávny e-mail alebo heslo.",
+          "error"
+        );
+
+
+        loginButton.disabled = false;
+
+
+        loginButton.textContent =
+          "🔑 Prihlásiť sa";
+
+
+        return;
+
+      }
+
+
+
+      /*
+      -----------------------------------
+        ÚSPEŠNÉ PRIHLÁSENIE
+      -----------------------------------
+      */
+
+      showMessage(
+        "✅ Prihlásenie úspešné!",
+        "success"
+      );
+
+
+
+      /*
+      -----------------------------------
+        PRESMEROVANIE
+      -----------------------------------
+      */
+
+      setTimeout(
+
+        function(){
+
+          window.location.href =
+            "app.html";
+
+        },
+
+        700
+
+      );
+
+
+    }catch(error){
+
+
+      console.error(
+        "Chyba prihlásenia:",
+        error
+      );
+
+
+      showMessage(
+        error.message ||
+        "Nepodarilo sa prihlásiť.",
+        "error"
+      );
+
+
+      loginButton.disabled = false;
+
+
+      loginButton.textContent =
+        "🔑 Prihlásiť sa";
+
+    }
+
 
   }
+
 );
+
 
 
 /*
 =========================================
-  SPRÁVA
+  ZOBRAZENIE SPRÁVY
 =========================================
 */
 
-function showMessage(text){
+function showMessage(
+  text,
+  type
+){
 
-  message.textContent=text;
+  message.textContent = text;
+
 
   message.classList.remove(
-    "hidden"
+    "hidden",
+    "error",
+    "success"
   );
+
+
+  if(type){
+
+    message.classList.add(
+      type
+    );
+
+  }
 
 }
 
 
+
 /*
 =========================================
-  REGISTRÁCIA
+  PRECHOD NA REGISTRÁCIU
 =========================================
 */
 
 function goToRegister(){
 
-  /*
-    Zatiaľ používame register.html.
-  */
-
-  window.location.href="register.html";
+  window.location.href =
+    "register.html";
 
 }
 
 
+
 /*
 =========================================
-  AK UŽ JE POUŽÍVATEĽ PRIHLÁSENÝ
+  KONTROLA,
+  ČI JE POUŽÍVATEĽ PRIHLÁSENÝ
 =========================================
 */
 
-const loggedUser=
-  localStorage.getItem(
-    "nakupnyPrihlasenyV1"
-  );
+async function checkAlreadyLoggedIn(){
+
+  try{
 
 
-if(loggedUser){
+    if(
+      typeof getCurrentUser !== "function"
+    ){
 
-  const users=
-    JSON.parse(
-      localStorage.getItem(
-        "nakupnyPouzivateliaV1"
-      ) || "{}"
+      return;
+
+    }
+
+
+
+    const user =
+
+      await getCurrentUser();
+
+
+
+    if(user){
+
+      window.location.href =
+        "app.html";
+
+    }
+
+
+  }catch(error){
+
+    console.log(
+      "Používateľ nie je prihlásený."
     );
-
-
-  if(users[loggedUser]){
-
-    window.location.href="index.html";
 
   }
 
 }
 
+
+checkAlreadyLoggedIn();
+
+
 </script>
 
+
 </body>
+
 </html>
