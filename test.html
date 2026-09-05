@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Test Appwrite</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 30px;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+    }
+
+    .box {
+      max-width: 700px;
+      margin: 40px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .info {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      word-break: break-word;
+    }
+
+    #result {
+      padding: 15px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-top: 20px;
+    }
+
+    .loading {
+      background: #fff3cd;
+      color: #664d03;
+    }
+
+    .success {
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #842029;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #222;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h1>🧪 Appwrite Test</h1>
+
+  <div class="info">
+    <strong>APPWRITE_PROJECT_ID</strong><br>
+    6a9c24ee00187d95fe1d
+    <br><br>
+
+    <strong>APPWRITE_PROJECT_NAME</strong><br>
+    Nákupný zoznam
+    <br><br>
+
+    <strong>APPWRITE_ENDPOINT</strong><br>
+    https://fra.cloud.appwrite.io/v1
+  </div>
+
+  <div id="result" class="loading">
+    ⏳ Testujem Appwrite...
+  </div>
+
+  <button onclick="testAppwrite()">
+    🔄 Test znova
+  </button>
+
+</div>
+
+
+<!-- Appwrite SDK -->
+<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+
+<script>
+
+  // ==========================================
+  // TVOJE APPWRITE ÚDAJE
+  // ==========================================
+
+  const APPWRITE_PROJECT_ID =
+    "6a9c24ee00187d95fe1d";
+
+  const APPWRITE_PROJECT_NAME =
+    "Nákupný zoznam";
+
+  const APPWRITE_ENDPOINT =
+    "https://fra.cloud.appwrite.io/v1";
+
+
+  // ==========================================
+  // APPWRITE CLIENT
+  // ==========================================
+
+  const client =
+    new Appwrite.Client();
+
+  client
+    .setEndpoint(APPWRITE_ENDPOINT)
+    .setProject(APPWRITE_PROJECT_ID);
+
+
+  // ==========================================
+  // ACCOUNT
+  // ==========================================
+
+  const account =
+    new Appwrite.Account(client);
+
+
+  // ==========================================
+  // VÝSLEDOK
+  // ==========================================
+
+  function result(message, type) {
+
+    const element =
+      document.getElementById("result");
+
+    element.className = type;
+
+    element.textContent = message;
+
+  }
+
+
+  // ==========================================
+  // TEST
+  // ==========================================
+
+  async function testAppwrite() {
+
+    result(
+      "⏳ Pripájam sa k Appwrite...",
+      "loading"
+    );
+
+
+    console.log(
+      "PROJECT ID:",
+      APPWRITE_PROJECT_ID
+    );
+
+    console.log(
+      "PROJECT NAME:",
+      APPWRITE_PROJECT_NAME
+    );
+
+    console.log(
+      "ENDPOINT:",
+      APPWRITE_ENDPOINT
+    );
+
+
+    try {
+
+      const user =
+        await account.get();
+
+
+      // ======================================
+      // ÚSPECH
+      // ======================================
+
+      result(
+
+        "✅ APPWRITE FUNGUJE!\n\n" +
+
+        "Projekt:\n" +
+        APPWRITE_PROJECT_NAME +
+        "\n\n" +
+
+        "Project ID:\n" +
+        APPWRITE_PROJECT_ID +
+        "\n\n" +
+
+        "Endpoint:\n" +
+        APPWRITE_ENDPOINT +
+        "\n\n" +
+
+        "Prihlásený používateľ:\n" +
+        (user.name || "bez mena") +
+        "\n\n" +
+
+        "Email:\n" +
+        (user.email || "bez emailu") +
+        "\n\n" +
+
+        "User ID:\n" +
+        (user.$id || "bez ID"),
+
+        "success"
+
+      );
+
+
+      console.log(
+        "Appwrite user:",
+        user
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Appwrite chyba:",
+        error
+      );
+
+
+      result(
+
+        "❌ APPWRITE CHYBA\n\n" +
+
+        "Message: " +
+        (error.message || "undefined") +
+
+        "\n\nCode: " +
+        (error.code ?? "undefined") +
+
+        "\n\nType: " +
+        (error.type ?? "undefined") +
+
+        "\n\nURL:\n" +
+        window.location.href +
+
+        "\n\nOrigin:\n" +
+        window.location.origin,
+
+        "error"
+
+      );
+
+    }
+
+  }
+
+
+  // ==========================================
+  // SPUSTIŤ AUTOMATICKY
+  // ==========================================
+
+  testAppwrite();
+
+</script>
+
+</body>
+</html>
