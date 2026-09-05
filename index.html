@@ -2,6 +2,7 @@
 <html lang="sk">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -15,7 +16,9 @@
     rel="stylesheet"
     href="css/style.css"
   >
+
 </head>
+
 
 <body>
 
@@ -27,23 +30,36 @@
       🛒 Nákupný kalendár
     </h1>
 
-    <p style="text-align:center;color:#777;">
+
+    <p
+      style="
+        text-align:center;
+        color:#777;
+      "
+    >
+
       Vytvor si svoje nákupné zoznamy,
       vyber obchody a plánuj svoje nákupy.
+
     </p>
 
 
-    <div style="
-      display:grid;
-      gap:10px;
-      margin-top:25px;
-    ">
+    <div
+      style="
+        display:grid;
+        gap:10px;
+        margin-top:25px;
+      "
+    >
+
 
       <button
         class="primary"
         onclick="window.location.href='login.html'"
       >
+
         🔐 Prihlásiť sa
+
       </button>
 
 
@@ -51,41 +67,132 @@
         class="secondary"
         onclick="window.location.href='register.html'"
       >
+
         📝 Registrovať sa
+
       </button>
 
+
     </div>
+
+
+    <p
+      id="loginStatus"
+      style="
+        text-align:center;
+        color:#777;
+        margin-top:20px;
+        font-size:14px;
+      "
+    >
+
+      Kontrolujem prihlásenie...
+
+    </p>
+
 
   </section>
 
 </div>
 
 
+
+<!-- ================================
+     APPWRITE SDK
+================================ -->
+
+<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+
+
+
+<!-- ================================
+     APPWRITE AUTH
+================================ -->
+
 <script src="js/auth.js"></script>
+
+
 
 <script>
 
 /*
- * Ak je používateľ už prihlásený,
- * môže ísť rovno do aplikácie.
- */
+====================================
+KONTROLA PRIHLÁSENIA
+====================================
+*/
 
-if(
-  typeof getCurrentUser === "function" &&
-  getCurrentUser()
-){
+document.addEventListener(
+  "DOMContentLoaded",
+  async function(){
 
-  /*
-   * Voliteľné:
-   * ak nechceš automatické presmerovanie,
-   * tento blok môžeš vymazať.
-   */
+    const status=
+      document.getElementById(
+        "loginStatus"
+      );
 
-  // window.location.href = "app.html";
 
-}
+    try{
+
+      /*
+       * Skontrolujeme,
+       * či existuje prihlásený používateľ
+       */
+
+      const user=
+        await getCurrentUser();
+
+
+      if(user){
+
+        status.innerHTML=
+
+          "🟢 Prihlásený ako <b>"
+          +
+          user.name
+          +
+          "</b><br><br>"
+          +
+          "Presmerovanie do aplikácie...";
+
+
+        /*
+         * Presmerovanie
+         */
+
+        setTimeout(
+          function(){
+
+            window.location.href=
+              "app.html";
+
+          },
+          800
+        );
+
+
+      }else{
+
+        status.textContent=
+          "🔐 Prihlás sa alebo si vytvor nový účet.";
+
+      }
+
+
+    }catch(error){
+
+      console.error(error);
+
+
+      status.textContent=
+        "🔐 Prihlás sa alebo si vytvor nový účet.";
+
+    }
+
+  }
+);
 
 </script>
+
 
 </body>
 
