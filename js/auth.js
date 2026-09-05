@@ -1,71 +1,88 @@
 /*
-========================================
-APPWRITE KONFIGURÁCIA
-========================================
+=========================================
+  APPWRITE NASTAVENIE
+=========================================
 */
 
-const APPWRITE_ENDPOINT =
-  "https://fra.cloud.appwrite.io/v1";
 
-const APPWRITE_PROJECT_ID =
-  "6a9c24ee00187d95fe1d";
+const {
+  Client,
+  Account,
+  ID
+} = Appwrite;
+
 
 
 /*
-========================================
-APPWRITE CLIENT
-========================================
+=========================================
+  CLIENT
+=========================================
 */
 
-const client =
-  new Appwrite.Client();
+const client = new Client();
+
 
 client
-  .setEndpoint(APPWRITE_ENDPOINT)
-  .setProject(APPWRITE_PROJECT_ID);
+  .setEndpoint(
+    "https://fra.cloud.appwrite.io/v1"
+  )
+  .setProject(
+    "6a9c24ee00187d95fe1d"
+  );
+
 
 
 /*
-========================================
-APPWRITE ACCOUNT
-========================================
+=========================================
+  ACCOUNT
+=========================================
 */
 
 const account =
-  new Appwrite.Account(client);
+  new Account(client);
+
 
 
 /*
-========================================
-REGISTRÁCIA NOVÉHO POUŽÍVATEĽA
-========================================
+=========================================
+  REGISTRÁCIA
+=========================================
+
+  email
+  password
 */
 
-async function registerUser(name, email, password){
+async function registerUser(
+  email,
+  name,
+  password
+){
 
   try{
 
+
     const user =
-      await account.create({
 
-        userId: Appwrite.ID.unique(),
+      await account.create(
+        ID.unique(),
+        email,
+        password,
+        name
+      );
 
-        email: email,
-
-        password: password,
-
-        name: name
-
-      });
 
 
     return {
-      success: true,
-      user: user
+
+      success:true,
+
+      user:user
+
     };
 
 
   }catch(error){
+
 
     console.error(
       "Chyba registrácie:",
@@ -74,42 +91,59 @@ async function registerUser(name, email, password){
 
 
     return {
-      success: false,
-      message: error.message
+
+      success:false,
+
+      message:
+        getErrorMessage(error)
+
     };
+
 
   }
 
 }
 
 
+
 /*
-========================================
-PRIHLÁSENIE
-========================================
+=========================================
+  PRIHLÁSENIE
+=========================================
 */
 
-async function loginUser(email, password){
+async function loginUser(
+  email,
+  password
+){
 
   try{
 
+
+    /*
+      Vytvorenie e-mailovej session
+    */
+
     const session =
-      await account.createEmailPasswordSession({
 
-        email: email,
+      await account.createEmailPasswordSession(
+        email,
+        password
+      );
 
-        password: password
-
-      });
 
 
     return {
-      success: true,
-      session: session
+
+      success:true,
+
+      session:session
+
     };
 
 
   }catch(error){
+
 
     console.error(
       "Chyba prihlásenia:",
@@ -118,76 +152,111 @@ async function loginUser(email, password){
 
 
     return {
-      success: false,
-      message: error.message
+
+      success:false,
+
+      message:
+        getErrorMessage(error)
+
     };
+
 
   }
 
 }
 
 
+
 /*
-========================================
-AKTUÁLNY POUŽÍVATEĽ
-========================================
+=========================================
+  AKTUÁLNY POUŽÍVATEĽ
+=========================================
 */
 
 async function getCurrentUser(){
 
   try{
 
+
     const user =
+
       await account.get();
+
 
     return user;
 
 
   }catch(error){
 
+
     return null;
+
 
   }
 
 }
 
 
+
 /*
-========================================
-ODHLÁSENIE
-========================================
+=========================================
+  ODHLÁSENIE
+=========================================
 */
 
 async function logoutUser(){
 
   try{
 
-    await account.deleteSession({
-      sessionId: "current"
-    });
+
+    /*
+      Vymažeme aktuálnu session
+    */
+
+    await account.deleteSession(
+      "current"
+    );
 
 
-    window.location.href =
-      "index.html";
+    return {
+
+      success:true
+
+    };
 
 
   }catch(error){
 
-    console.error(error);
 
-    alert(
-      "Nepodarilo sa odhlásiť."
+    console.error(
+      "Chyba odhlásenia:",
+      error
     );
+
+
+    return {
+
+      success:false,
+
+      message:
+        getErrorMessage(error)
+
+    };
+
 
   }
 
 }
 
 
+
 /*
-========================================
-OCHRANA STRÁNKY APP.HTML
-========================================
+=========================================
+  OCHRANA APP.HTML
+=========================================
+
+  Ak používateľ nie je prihlásený,
+  presmeruje ho na login.html.
 */
 
 async function requireLogin(){
@@ -196,16 +265,98 @@ async function requireLogin(){
     await getCurrentUser();
 
 
+
   if(!user){
+
 
     window.location.href =
       "login.html";
 
+
     return null;
+
 
   }
 
 
+
   return user;
+
+}
+
+
+
+/*
+=========================================
+  SPRÁVY CHÝB
+=========================================
+*/
+
+function getErrorMessage(error){
+
+
+  /*
+    Účet už existuje
+  */
+
+  if(
+    error.code === 409
+  ){
+
+    return "Účet s týmto e-mailom už existuje.";
+
+  }
+
+
+
+  /*
+    Nesprávne údaje
+  */
+
+  if(
+    error.code === 401
+  ){
+
+    return "Nesprávny e-mail alebo heslo.";
+
+  }
+
+
+
+  /*
+    Príliš krátke heslo
+  */
+
+  if(
+    error.code === 400
+  ){
+
+    return (
+      error.message ||
+      "Skontroluj zadané údaje."
+    );
+
+  }
+
+
+
+  /*
+    Internet alebo Appwrite
+  */
+
+  if(
+    error.message
+  ){
+
+    return error.message;
+
+  }
+
+
+
+  return (
+    "Nastala neočakávaná chyba."
+  );
+
 
 }
