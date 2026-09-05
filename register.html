@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html lang="sk">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
 <title>🛒 Registrácia – Nákupný kalendár</title>
+
 
 <style>
 
@@ -97,6 +104,11 @@ button{
   opacity:.9;
 }
 
+.primary:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
 .message{
   padding:11px;
 
@@ -109,6 +121,16 @@ button{
   margin-bottom:12px;
 
   font-size:14px;
+}
+
+.message.error{
+  background:#ffe5e5;
+  color:#b00000;
+}
+
+.message.success{
+  background:#e3f7e8;
+  color:#176b2c;
 }
 
 .hidden{
@@ -150,11 +172,15 @@ button{
 }
 
 </style>
+
 </head>
+
 
 <body>
 
+
 <div class="card">
+
 
   <div class="logo">
     🛒
@@ -181,6 +207,7 @@ button{
     id="registerForm"
     class="form"
   >
+
 
     <input
       id="email"
@@ -212,13 +239,18 @@ button{
 
 
     <button
+      id="registerButton"
       type="submit"
       class="primary"
     >
+
       👤 Zaregistrovať sa
+
     </button>
 
+
   </form>
+
 
 
   <div class="login">
@@ -235,15 +267,38 @@ button{
   </div>
 
 
+
   <div class="note">
-    Po registrácii budeš automaticky prihlásený
-    a otvorí sa tvoj nákupný kalendár.
+
+    Po registrácii budeš automaticky
+    prihlásený a otvorí sa tvoj
+    nákupný kalendár.
+
   </div>
+
 
 </div>
 
 
+
+<!-- =====================================
+     APPWRITE SDK
+===================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+
+
+
+<!-- =====================================
+     APPWRITE AUTH.JS
+===================================== -->
+
+<script src="js/auth.js"></script>
+
+
+
 <script>
+
 
 /*
 =========================================
@@ -256,10 +311,18 @@ const registerForm =
     "registerForm"
   );
 
+
 const message =
   document.getElementById(
     "message"
   );
+
+
+const registerButton =
+  document.getElementById(
+    "registerButton"
+  );
+
 
 
 /*
@@ -269,30 +332,62 @@ const message =
 */
 
 registerForm.addEventListener(
+
   "submit",
-  function(event){
+
+  async function(event){
 
     event.preventDefault();
 
 
+    /*
+    -------------------------------------
+      E-MAIL
+    -------------------------------------
+    */
+
     const email =
+
       document
-        .getElementById("email")
+        .getElementById(
+          "email"
+        )
         .value
         .trim()
         .toLowerCase();
 
 
+
+    /*
+    -------------------------------------
+      HESLO
+    -------------------------------------
+    */
+
     const password =
+
       document
-        .getElementById("password")
+        .getElementById(
+          "password"
+        )
         .value;
 
+
+
+    /*
+    -------------------------------------
+      ZOPAKOVANÉ HESLO
+    -------------------------------------
+    */
 
     const password2 =
+
       document
-        .getElementById("password2")
+        .getElementById(
+          "password2"
+        )
         .value;
+
 
 
     /*
@@ -304,12 +399,14 @@ registerForm.addEventListener(
     if(password !== password2){
 
       showMessage(
-        "Heslá sa nezhodujú."
+        "Heslá sa nezhodujú.",
+        "error"
       );
 
       return;
 
     }
+
 
 
     /*
@@ -321,7 +418,8 @@ registerForm.addEventListener(
     if(password.length < 6){
 
       showMessage(
-        "Heslo musí mať aspoň 6 znakov."
+        "Heslo musí mať aspoň 6 znakov.",
+        "error"
       );
 
       return;
@@ -329,126 +427,249 @@ registerForm.addEventListener(
     }
 
 
+
     /*
     -------------------------------------
-      NAČÍTANIE EXISTUJÚCICH ÚČTOV
+      KONTROLA APPWRITE
     -------------------------------------
     */
 
-    let users = {};
+    if(
+      typeof registerUser !== "function"
+    ){
+
+      showMessage(
+        "Chyba: Appwrite sa nepodarilo načítať.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+
+    /*
+    -------------------------------------
+      BLOKOVANIE TLAČIDLA
+    -------------------------------------
+    */
+
+    registerButton.disabled = true;
+
+    registerButton.textContent =
+      "⏳ Vytváram účet...";
+
+
+
+    showMessage(
+      "Registrujem používateľa...",
+      ""
+    );
+
+
 
     try{
 
-      users =
-        JSON.parse(
-          localStorage.getItem(
-            "nakupnyPouzivateliaV1"
-          ) || "{}"
+
+      /*
+      -----------------------------------
+        REGISTRÁCIA V APPWRITE
+      -----------------------------------
+      */
+
+      const result =
+
+        await registerUser(
+          email,
+          email,
+          password
         );
+
+
+
+      /*
+      -----------------------------------
+        CHYBA REGISTRÁCIE
+      -----------------------------------
+      */
+
+      if(!result.success){
+
+        showMessage(
+          result.message ||
+          "Registrácia sa nepodarila.",
+          "error"
+        );
+
+
+        registerButton.disabled = false;
+
+        registerButton.textContent =
+          "👤 Zaregistrovať sa";
+
+        return;
+
+      }
+
+
+
+      /*
+      -----------------------------------
+        ÚČET VYTVORENÝ
+      -----------------------------------
+      */
+
+      showMessage(
+        "✅ Účet bol vytvorený. Prihlasujem...",
+        "success"
+      );
+
+
+
+      /*
+      -----------------------------------
+        AUTOMATICKÉ PRIHLÁSENIE
+      -----------------------------------
+      */
+
+      const loginResult =
+
+        await loginUser(
+          email,
+          password
+        );
+
+
+
+      /*
+      -----------------------------------
+        AK SA PRIHLÁSENIE NEPODARÍ
+      -----------------------------------
+      */
+
+      if(!loginResult.success){
+
+        showMessage(
+          "Účet bol vytvorený. Teraz sa prosím prihlás.",
+          "success"
+        );
+
+
+        setTimeout(
+
+          function(){
+
+            window.location.href =
+              "login.html";
+
+          },
+
+          1500
+
+        );
+
+
+        return;
+
+      }
+
+
+
+      /*
+      -----------------------------------
+        ÚSPEŠNÉ PRIHLÁSENIE
+      -----------------------------------
+      */
+
+      showMessage(
+        "✅ Registrácia úspešná! Otváram aplikáciu...",
+        "success"
+      );
+
+
+
+      /*
+      -----------------------------------
+        PRESMEROVANIE DO APP
+      -----------------------------------
+      */
+
+      setTimeout(
+
+        function(){
+
+          window.location.href =
+            "app.html";
+
+        },
+
+        1000
+
+      );
+
 
     }catch(error){
 
-      users = {};
 
-    }
-
-
-    /*
-    -------------------------------------
-      KONTROLA EXISTUJÚCEHO ÚČTU
-    -------------------------------------
-    */
-
-    if(users[email]){
-
-      showMessage(
-        "Účet s týmto e-mailom už existuje."
+      console.error(
+        "Chyba:",
+        error
       );
 
-      return;
+
+      showMessage(
+        error.message ||
+        "Nastala neočakávaná chyba.",
+        "error"
+      );
+
+
+      registerButton.disabled = false;
+
+      registerButton.textContent =
+        "👤 Zaregistrovať sa";
 
     }
 
 
-    /*
-    -------------------------------------
-      VYTVORENIE POUŽÍVATEĽA
-    -------------------------------------
-    */
-
-    users[email] = {
-
-      email: email,
-
-      password: password
-
-    };
-
-
-    /*
-    -------------------------------------
-      ULOŽENIE POUŽÍVATEĽA
-    -------------------------------------
-    */
-
-    localStorage.setItem(
-      "nakupnyPouzivateliaV1",
-      JSON.stringify(users)
-    );
-
-
-    /*
-    -------------------------------------
-      PRIHLÁSENIE
-    -------------------------------------
-    */
-
-    localStorage.setItem(
-      "nakupnyPrihlasenyV1",
-      email
-    );
-
-
-    /*
-    -------------------------------------
-      VYTVORENIE OSOBNEJ DATABÁZY
-    -------------------------------------
-    */
-
-    localStorage.setItem(
-      "nakupnyKalendárV2_" + email,
-      JSON.stringify({})
-    );
-
-
-    /*
-    -------------------------------------
-      PRESMEROVANIE
-    -------------------------------------
-    */
-
-    window.location.href =
-      "index.html";
-
   }
+
 );
+
 
 
 /*
 =========================================
-  ZOBRAZENIE CHYBY
+  ZOBRAZENIE SPRÁVY
 =========================================
 */
 
-function showMessage(text){
+function showMessage(
+  text,
+  type
+){
 
   message.textContent = text;
 
+
   message.classList.remove(
-    "hidden"
+    "hidden",
+    "error",
+    "success"
   );
 
+
+  if(type){
+
+    message.classList.add(
+      type
+    );
+
+  }
+
 }
+
 
 
 /*
@@ -465,48 +686,58 @@ function goToLogin(){
 }
 
 
+
 /*
 =========================================
-  KONTROLA, ČI UŽ JE PRIHLÁSENÝ
+  KONTROLA PRIHLÁSENIA
 =========================================
 */
 
-const loggedUser =
-  localStorage.getItem(
-    "nakupnyPrihlasenyV1"
-  );
-
-
-if(loggedUser){
-
-  let users = {};
+async function checkAlreadyLoggedIn(){
 
   try{
 
-    users =
-      JSON.parse(
-        localStorage.getItem(
-          "nakupnyPouzivateliaV1"
-        ) || "{}"
-      );
+
+    if(
+      typeof getCurrentUser !== "function"
+    ){
+
+      return;
+
+    }
+
+
+    const user =
+
+      await getCurrentUser();
+
+
+
+    if(user){
+
+      window.location.href =
+        "app.html";
+
+    }
+
 
   }catch(error){
 
-    users = {};
-
-  }
-
-
-  if(users[loggedUser]){
-
-    window.location.href =
-      "index.html";
+    console.log(
+      "Používateľ nie je prihlásený."
+    );
 
   }
 
 }
 
+
+checkAlreadyLoggedIn();
+
+
 </script>
 
+
 </body>
+
 </html>
