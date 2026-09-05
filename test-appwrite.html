@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="sk">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Appwrite Test</title>
+
+</head>
+
+<body>
+
+<h1>Test Appwrite</h1>
+
+<p id="status">
+Načítavam...
+</p>
+
+
+<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+
+
+<script>
+
+
+const status =
+  document.getElementById("status");
+
+
+async function testAppwrite(){
+
+  try{
+
+
+    status.textContent =
+      "Pripájam sa na Appwrite...";
+
+
+    const client =
+      new Appwrite.Client();
+
+
+    client
+      .setEndpoint(
+        "https://fra.cloud.appwrite.io/v1"
+      )
+      .setProject(
+        "6a9c24ee00187d95fe1d"
+      );
+
+
+    const account =
+      new Appwrite.Account(client);
+
+
+    await account.get();
+
+
+    status.textContent =
+      "✅ Appwrite funguje a používateľ je prihlásený.";
+
+
+  }catch(error){
+
+
+    console.error(error);
+
+
+    status.innerHTML =
+
+      "❌ Chyba:<br><br>"
+      +
+      "Message: "
+      +
+      error.message
+      +
+      "<br><br>"
+      +
+      "Code: "
+      +
+      error.code
+      +
+      "<br><br>"
+      +
+      "Type: "
+      +
+      error.type;
+
+
+  }
+
+}
+
+
+testAppwrite();
+
+
+</script>
+
+</body>
+
+</html>
