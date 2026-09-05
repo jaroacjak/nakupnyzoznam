@@ -1,12 +1,11 @@
 /*
 ========================================
-APPWRITE NASTAVENIA
+APPWRITE KONFIGURÁCIA
 ========================================
 */
 
 const APPWRITE_ENDPOINT =
   "https://fra.cloud.appwrite.io/v1";
-
 
 const APPWRITE_PROJECT_ID =
   "6a9c24ee00187d95fe1d";
@@ -14,79 +13,59 @@ const APPWRITE_PROJECT_ID =
 
 /*
 ========================================
-VYTVOŘENIE APPWRITE CLIENTA
+APPWRITE CLIENT
 ========================================
 */
 
 const client =
   new Appwrite.Client();
 
-
 client
-  .setEndpoint(
-    APPWRITE_ENDPOINT
-  )
-  .setProject(
-    APPWRITE_PROJECT_ID
-  );
+  .setEndpoint(APPWRITE_ENDPOINT)
+  .setProject(APPWRITE_PROJECT_ID);
 
 
 /*
 ========================================
-ACCOUNT
+APPWRITE ACCOUNT
 ========================================
 */
 
 const account =
-  new Appwrite.Account(
-    client
-  );
+  new Appwrite.Account(client);
 
 
 /*
 ========================================
-REGISTRÁCIA
+REGISTRÁCIA NOVÉHO POUŽÍVATEĽA
 ========================================
 */
 
-async function registerUser(
-  name,
-  email,
-  password
-){
+async function registerUser(name, email, password){
 
   try{
 
-
-    /*
-     * Vytvorenie používateľa
-     */
-
     const user =
-      await account.create(
+      await account.create({
 
-        Appwrite.ID.unique(),
+        userId: Appwrite.ID.unique(),
 
-        email,
+        email: email,
 
-        password,
+        password: password,
 
-        name
+        name: name
 
-      );
+      });
 
 
     return {
-
-      success:true,
-
-      user:user
-
+      success: true,
+      user: user
     };
 
 
   }catch(error){
-
 
     console.error(
       "Chyba registrácie:",
@@ -95,12 +74,8 @@ async function registerUser(
 
 
     return {
-
-      success:false,
-
-      message:
-        error.message
-
+      success: false,
+      message: error.message
     };
 
   }
@@ -114,39 +89,27 @@ PRIHLÁSENIE
 ========================================
 */
 
-async function loginUser(
-  email,
-  password
-){
+async function loginUser(email, password){
 
   try{
 
-
-    /*
-     * Vytvorenie email session
-     */
-
     const session =
-      await account.createEmailPasswordSession(
+      await account.createEmailPasswordSession({
 
-        email,
+        email: email,
 
-        password
+        password: password
 
-      );
+      });
 
 
     return {
-
-      success:true,
-
-      session:session
-
+      success: true,
+      session: session
     };
 
 
   }catch(error){
-
 
     console.error(
       "Chyba prihlásenia:",
@@ -155,12 +118,8 @@ async function loginUser(
 
 
     return {
-
-      success:false,
-
-      message:
-        error.message
-
+      success: false,
+      message: error.message
     };
 
   }
@@ -178,21 +137,13 @@ async function getCurrentUser(){
 
   try{
 
-
     const user =
       await account.get();
-
 
     return user;
 
 
   }catch(error){
-
-
-    /*
-     * Používateľ
-     * nie je prihlásený
-     */
 
     return null;
 
@@ -211,10 +162,9 @@ async function logoutUser(){
 
   try{
 
-
-    await account.deleteSession(
-      "current"
-    );
+    await account.deleteSession({
+      sessionId: "current"
+    });
 
 
     window.location.href =
@@ -223,12 +173,7 @@ async function logoutUser(){
 
   }catch(error){
 
-
-    console.error(
-      "Chyba odhlásenia:",
-      error
-    );
-
+    console.error(error);
 
     alert(
       "Nepodarilo sa odhlásiť."
@@ -241,7 +186,7 @@ async function logoutUser(){
 
 /*
 ========================================
-OCHRANA APP.HTML
+OCHRANA STRÁNKY APP.HTML
 ========================================
 */
 
@@ -255,7 +200,6 @@ async function requireLogin(){
 
     window.location.href =
       "login.html";
-
 
     return null;
 
