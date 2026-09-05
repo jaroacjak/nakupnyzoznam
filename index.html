@@ -12,6 +12,7 @@
 
   <title>🛒 Nákupný kalendár</title>
 
+
   <link
     rel="stylesheet"
     href="css/style.css"
@@ -22,9 +23,12 @@
 
 <body>
 
+
 <div class="app">
 
+
   <section class="card">
+
 
     <h1>
       🛒 Nákupný kalendár
@@ -44,7 +48,13 @@
     </p>
 
 
+
+    <!-- ============================
+         PRIHLÁSENIE A REGISTRÁCIA
+    ============================= -->
+
     <div
+      id="authButtons"
       style="
         display:grid;
         gap:10px;
@@ -63,6 +73,7 @@
       </button>
 
 
+
       <button
         class="secondary"
         onclick="window.location.href='register.html'"
@@ -75,6 +86,11 @@
 
     </div>
 
+
+
+    <!-- ============================
+         STAV PRIHLÁSENIA
+    ============================= -->
 
     <p
       id="loginStatus"
@@ -93,21 +109,22 @@
 
   </section>
 
+
 </div>
 
 
 
-<!-- ================================
+<!-- =====================================
      APPWRITE SDK
-================================ -->
+===================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
 
 
 
-<!-- ================================
-     APPWRITE AUTH
-================================ -->
+<!-- =====================================
+     AUTENTIFIKÁCIA
+===================================== -->
 
 <script src="js/auth.js"></script>
 
@@ -115,81 +132,160 @@
 
 <script>
 
+
 /*
-====================================
-KONTROLA PRIHLÁSENIA
-====================================
+=========================================
+  KONTROLA PRIHLÁSENIA
+=========================================
 */
 
 document.addEventListener(
+
   "DOMContentLoaded",
+
   async function(){
 
-    const status=
+
+    const status =
+
       document.getElementById(
         "loginStatus"
       );
 
 
+
+    const authButtons =
+
+      document.getElementById(
+        "authButtons"
+      );
+
+
+
     try{
 
-      /*
-       * Skontrolujeme,
-       * či existuje prihlásený používateľ
-       */
 
-      const user=
+      /*
+      -----------------------------------
+        KONTROLA APPWRITE POUŽÍVATEĽA
+      -----------------------------------
+      */
+
+      const user =
+
         await getCurrentUser();
 
 
+
+      /*
+      -----------------------------------
+        AK JE PRIHLÁSENÝ
+      -----------------------------------
+      */
+
       if(user){
-
-        status.innerHTML=
-
-          "🟢 Prihlásený ako <b>"
-          +
-          user.name
-          +
-          "</b><br><br>"
-          +
-          "Presmerovanie do aplikácie...";
 
 
         /*
-         * Presmerovanie
-         */
+          Skryjeme tlačidlá
+        */
+
+        authButtons.style.display =
+          "none";
+
+
+
+        /*
+          MENO POUŽÍVATEĽA
+
+          Ak nemá meno,
+          použije sa e-mail.
+        */
+
+        const userName =
+
+          user.name ||
+          user.email ||
+          "používateľ";
+
+
+
+        status.innerHTML =
+
+          "🟢 Prihlásený ako <b>"
+          +
+          userName
+          +
+          "</b><br><br>"
+          +
+          "Otváram aplikáciu...";
+
+
+
+        /*
+        ---------------------------------
+          PRESMEROVANIE DO APP
+        ---------------------------------
+        */
 
         setTimeout(
+
           function(){
 
-            window.location.href=
+            window.location.href =
               "app.html";
 
           },
+
           800
+
         );
 
-
-      }else{
-
-        status.textContent=
-          "🔐 Prihlás sa alebo si vytvor nový účet.";
 
       }
 
 
-    }catch(error){
+      /*
+      -----------------------------------
+        AK NIE JE PRIHLÁSENÝ
+      -----------------------------------
+      */
 
-      console.error(error);
+      else{
 
 
-      status.textContent=
-        "🔐 Prihlás sa alebo si vytvor nový účet.";
+        status.textContent =
+
+          "🔐 Prihlás sa alebo si vytvor nový účet.";
+
+
+      }
+
 
     }
 
+
+    catch(error){
+
+
+      console.error(
+        "Chyba kontroly prihlásenia:",
+        error
+      );
+
+
+      status.textContent =
+
+        "🔐 Prihlás sa alebo si vytvor nový účet.";
+
+
+    }
+
+
   }
+
 );
+
 
 </script>
 
