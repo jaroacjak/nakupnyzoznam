@@ -1,139 +1,156 @@
 <!DOCTYPE html>
-<html lang="sk">
+<html lang="sk"><head>  
+<meta charset="UTF-8"><meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
 
-<head>
+«»
 
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>🛒 Nákupný kalendár</title>
-
-
-  <link
+  <title>🛒 Nákupný kalendár</title>  <link
     rel="stylesheet"
     href="css/style.css"
+  ></head><body><div class="app">  <section class="card"><h1>
+  🛒 Nákupný kalendár
+</h1>
+
+
+<p
+  style="
+    text-align:center;
+    color:#777;
+  "
+>
+
+  Vytvor si svoje nákupné zoznamy,
+  vyber obchody a plánuj svoje nákupy.
+
+</p>
+
+
+
+<!-- =========================
+     TLAČIDLÁ
+========================== -->
+
+<div
+  style="
+    display:grid;
+    gap:10px;
+    margin-top:25px;
+  "
+>
+
+
+  <!-- PRIHLÁSENIE -->
+
+  <button
+    class="primary"
+    type="button"
+    onclick="goToLogin()"
   >
 
-</head>
+    🔐 Prihlásiť sa
 
-
-<body>
-
-
-<div class="app">
-
-
-  <section class="card">
-
-
-    <h1>
-      🛒 Nákupný kalendár
-    </h1>
-
-
-    <p
-      style="
-        text-align:center;
-        color:#777;
-      "
-    >
-
-      Vytvor si svoje nákupné zoznamy,
-      vyber obchody a plánuj svoje nákupy.
-
-    </p>
+  </button>
 
 
 
-    <!-- =========================
-         TLAČIDLÁ
-    ========================== -->
+  <!-- REGISTRÁCIA -->
 
-    <div
-      style="
-        display:grid;
-        gap:10px;
-        margin-top:25px;
-      "
-    >
+  <button
+    class="secondary"
+    type="button"
+    onclick="goToRegister()"
+  >
 
+    📝 Registrovať sa
 
-      <!-- PRIHLÁSENIE -->
-
-      <button
-        class="primary"
-        type="button"
-        onclick="goToLogin()"
-      >
-
-        🔐 Prihlásiť sa
-
-      </button>
-
-
-
-      <!-- REGISTRÁCIA -->
-
-      <button
-        class="secondary"
-        type="button"
-        onclick="goToRegister()"
-      >
-
-        📝 Registrovať sa
-
-      </button>
-
-
-    </div>
-
-
-
-    <!-- STAV -->
-
-    <p
-      id="loginStatus"
-      style="
-        text-align:center;
-        color:#777;
-        margin-top:20px;
-        font-size:14px;
-      "
-    >
-
-      🔐 Prihlás sa alebo si vytvor nový účet.
-
-    </p>
-
-
-  </section>
+  </button>
 
 
 </div>
 
 
 
-<!-- =====================================
-     APPWRITE SDK
-===================================== -->
+<!-- STAV -->
 
-<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+<p
+  id="loginStatus"
+  style="
+    text-align:center;
+    color:#777;
+    margin-top:20px;
+    font-size:14px;
+  "
+>
+
+  🔐 Prihlás sa alebo si vytvor nový účet.
+
+</p>
+
+  </section></div><!-- =====================================
+     FIREBASE SDK
+===================================== --><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script><!-- =====================================
+     FIREBASE KONFIGURÁCIA
+===================================== --><script>
+
+const firebaseConfig = {
+
+  apiKey:
+    "AIzaSyB5Gv-H-Sm8JKz9pqfN6hhbKYUlfVK4vzE",
+
+  authDomain:
+    "nakupnyzoznam-1a04e.firebaseapp.com",
+
+  databaseURL:
+    "https://nakupnyzoznam-1a04e-default-rtdb.firebaseio.com",
+
+  projectId:
+    "nakupnyzoznam-1a04e",
+
+  storageBucket:
+    "nakupnyzoznam-1a04e.firebasestorage.app",
+
+  messagingSenderId:
+    "307268915654",
+
+  appId:
+    "1:307268915654:web:7de04a52585181dd0fe2c7",
+
+  measurementId:
+    "G-VZR504GLW7"
+
+};
 
 
 
-<!-- =====================================
-     APPWRITE AUTH
-===================================== -->
+/*
+=========================================
+  SPUSTENIE FIREBASE
+=========================================
+*/
 
-<script src="js/auth.js"></script>
+if(
+  !firebase.apps.length
+){
+
+  firebase.initializeApp(
+    firebaseConfig
+  );
+
+}
 
 
+const auth =
+  firebase.auth();
 
-<script>
+
+const database =
+  firebase.database();
+
+</script><!-- =====================================
+     FIREBASE AUTH
+===================================== --><script src="js/auth.js"></script><script>
 
 
 /*
@@ -171,7 +188,7 @@ function goToRegister(){
   KONTROLA PRIHLÁSENÉHO POUŽÍVATEĽA
 =========================================
 
-  Ak je používateľ prihlásený cez Appwrite,
+  Ak je používateľ prihlásený cez Firebase,
   automaticky ho presmerujeme do app.html.
 
 */
@@ -180,45 +197,60 @@ document.addEventListener(
 
   "DOMContentLoaded",
 
-  async function(){
+  function(){
 
 
-    try{
+    if(
+      typeof auth === "undefined"
+    ){
 
-
-      if(
-        typeof getCurrentUser !== "function"
-      ){
-
-        return;
-
-      }
-
-
-      const user =
-        await getCurrentUser();
-
-
-
-      if(user){
-
-
-        window.location.href =
-          "app.html";
-
-
-      }
-
-
-    }catch(error){
-
-
-      console.log(
-        "Používateľ nie je prihlásený."
-      );
-
+      return;
 
     }
+
+
+    auth.onAuthStateChanged(
+
+      function(user){
+
+
+        if(user){
+
+
+          const status =
+            document.getElementById(
+              "loginStatus"
+            );
+
+
+          if(status){
+
+            status.textContent =
+              "✅ Už si prihlásený. Otváram aplikáciu...";
+
+          }
+
+
+          setTimeout(
+
+            function(){
+
+              window.location.href =
+                "app.html";
+
+            },
+
+            300
+
+          );
+
+
+        }
+
+
+      }
+
+    );
 
 
   }
@@ -227,8 +259,5 @@ document.addEventListener(
 
 
 </script>
-
-
 </body>
-
 </html>
