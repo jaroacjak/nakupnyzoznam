@@ -209,7 +209,9 @@ button{
       type="submit"
       class="primary"
     >
+
       🔑 Prihlásiť sa
+
     </button>
 
 
@@ -225,7 +227,9 @@ button{
       type="button"
       onclick="goToRegister()"
     >
+
       Zaregistrovať sa
+
     </button>
 
   </div>
@@ -236,15 +240,19 @@ button{
 
 
 <!-- =====================================
-     APPWRITE SDK
+     FIREBASE SDK
 ===================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
 
 
 <!-- =====================================
-     AUTENTIFIKÁCIA
+     FIREBASE AUTH.JS
 ===================================== -->
 
 <script src="js/auth.js"></script>
@@ -331,16 +339,17 @@ loginForm.addEventListener(
 
     /*
     -------------------------------------
-      KONTROLA APPWRITE
+      KONTROLA FIREBASE
     -------------------------------------
     */
 
     if(
-      typeof loginUser !== "function"
+      typeof loginUser !==
+      "function"
     ){
 
       showMessage(
-        "Appwrite sa nepodarilo načítať.",
+        "Firebase sa nepodarilo načítať.",
         "error"
       );
 
@@ -356,7 +365,8 @@ loginForm.addEventListener(
     -------------------------------------
     */
 
-    loginButton.disabled = true;
+    loginButton.disabled =
+      true;
 
 
     loginButton.textContent =
@@ -376,7 +386,7 @@ loginForm.addEventListener(
 
       /*
       -----------------------------------
-        PRIHLÁSENIE CEZ APPWRITE
+        PRIHLÁSENIE CEZ FIREBASE
       -----------------------------------
       */
 
@@ -395,16 +405,22 @@ loginForm.addEventListener(
       -----------------------------------
       */
 
-      if(!result.success){
+      if(
+        !result ||
+        !result.success
+      ){
 
         showMessage(
-          result.message ||
-          "Nesprávny e-mail alebo heslo.",
+          result &&
+          result.message
+            ? result.message
+            : "Nesprávny e-mail alebo heslo.",
           "error"
         );
 
 
-        loginButton.disabled = false;
+        loginButton.disabled =
+          false;
 
 
         loginButton.textContent =
@@ -459,14 +475,45 @@ loginForm.addEventListener(
       );
 
 
+      /*
+      -----------------------------------
+        FIREBASE CHYBOVÁ SPRÁVA
+      -----------------------------------
+      */
+
+      let errorMessage =
+        "Nepodarilo sa prihlásiť.";
+
+
+      if(
+        typeof getErrorMessage ===
+        "function"
+      ){
+
+        errorMessage =
+          getErrorMessage(
+            error
+          );
+
+      }else if(
+        error &&
+        error.message
+      ){
+
+        errorMessage =
+          error.message;
+
+      }
+
+
       showMessage(
-        error.message ||
-        "Nepodarilo sa prihlásiť.",
+        errorMessage,
         "error"
       );
 
 
-      loginButton.disabled = false;
+      loginButton.disabled =
+        false;
 
 
       loginButton.textContent =
@@ -492,7 +539,8 @@ function showMessage(
   type
 ){
 
-  message.textContent = text;
+  message.textContent =
+    text;
 
 
   message.classList.remove(
@@ -541,8 +589,15 @@ async function checkAlreadyLoggedIn(){
   try{
 
 
+    /*
+    -------------------------------------
+      KONTROLA FUNKCIE
+    -------------------------------------
+    */
+
     if(
-      typeof getCurrentUser !== "function"
+      typeof getCurrentUser !==
+      "function"
     ){
 
       return;
@@ -551,9 +606,14 @@ async function checkAlreadyLoggedIn(){
 
 
 
-    const user =
+    /*
+    -------------------------------------
+      OKAMŽITÁ KONTROLA
+    -------------------------------------
+    */
 
-      await getCurrentUser();
+    const user =
+      getCurrentUser();
 
 
 
@@ -561,6 +621,35 @@ async function checkAlreadyLoggedIn(){
 
       window.location.href =
         "app.html";
+
+      return;
+
+    }
+
+
+
+    /*
+    -------------------------------------
+      FIREBASE MÔŽE EŠTE NAČÍTAVAŤ
+      STAV PRIHLÁSENIA
+    -------------------------------------
+    */
+
+    if(
+      typeof waitForAuth ===
+      "function"
+    ){
+
+      const loadedUser =
+        await waitForAuth();
+
+
+      if(loadedUser){
+
+        window.location.href =
+          "app.html";
+
+      }
 
     }
 
