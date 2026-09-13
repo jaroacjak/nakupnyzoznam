@@ -3151,4 +3151,673 @@ function formatHours(obchod){
       function(day,index){
 
         const hours=
-         
+          obchod.hours[index];
+
+
+        if(!hours){
+
+          return `
+
+            <div>
+
+              <b>${day}:</b>
+              zatvorené
+
+            </div>
+
+          `;
+
+        }
+
+
+        return `
+
+          <div>
+
+            <b>${day}:</b>
+            ${hours[0]} – ${hours[1]}
+
+          </div>
+
+        `;
+
+      }
+
+    )
+    .join("");
+
+}
+
+
+/* ==================================================
+   VYKRESLENIE PREDAJNÍ NA MAPE
+================================================== */
+
+function vykresliPredajne(){
+
+  if(!map){
+
+    return;
+
+  }
+
+
+  storeMarkers.forEach(
+
+    function(marker){
+
+      map.removeLayer(
+        marker
+      );
+
+    }
+
+  );
+
+
+  storeMarkers=[];
+
+
+  Object.keys(
+    STORE_DATA
+  )
+  .forEach(
+
+    function(store){
+
+      STORE_DATA[store]
+        .forEach(
+
+          function(obchod){
+
+            const status=
+              stavPredajne(
+                obchod
+              );
+
+
+            const icon=
+              L.divIcon({
+
+                className:"",
+
+                html:`
+
+                  <div class="shop-icon">
+
+                    <img
+                      src="${obchod.logo}"
+                      alt=""
+                      onerror="
+                        this.style.display='none'
+                      "
+                    >
+
+                  </div>
+
+                `,
+
+                iconSize:[
+
+                  44,
+                  44
+
+                ],
+
+                iconAnchor:[
+
+                  22,
+                  22
+
+                ]
+
+              });
+
+
+            const marker=
+              L.marker(
+
+                [
+                  obchod.lat,
+                  obchod.lng
+                ],
+
+                {
+                  icon:icon
+                }
+
+              )
+              .addTo(
+                map
+              );
+
+
+            marker.bindPopup(
+
+              `
+
+              <div
+                class="store-popup"
+              >
+
+                <img
+                  src="${obchod.logo}"
+                  alt=""
+                >
+
+
+                <h3>
+
+                  ${escapeHtml(
+                    obchod.name
+                  )}
+
+                </h3>
+
+
+                <p>
+
+                  📍
+                  ${escapeHtml(
+                    obchod.address
+                  )}
+
+                </p>
+
+
+                <p>
+
+                  ${status.text}
+
+                </p>
+
+
+                <div class="hours">
+
+                  <b>
+                    Otváracie hodiny
+                  </b>
+
+                  ${formatHours(
+                    obchod
+                  )}
+
+                </div>
+
+
+                <button
+                  class="primary"
+                  onclick="
+                    vybratObchodZMapy(
+                      '${escapeHtml(store)}'
+                    )
+                  "
+                >
+                  🛒 Nakupovať tu
+                </button>
+
+
+                <button
+                  class="secondary"
+                  onclick="
+                    navigovat(
+                      ${obchod.lat},
+                      ${obchod.lng}
+                    )
+                  "
+                >
+                  🧭 Navigovať
+                </button>
+
+              </div>
+
+              `
+
+            );
+
+
+            storeMarkers.push(
+              marker
+            );
+
+          }
+
+        );
+
+    }
+
+  );
+
+}
+
+
+/* ==================================================
+   AKTUALIZÁCIA STAVOV
+================================================== */
+
+function obnovitStavy(){
+
+  if(!map){
+
+    return;
+
+  }
+
+
+  vykresliPredajne();
+
+}
+
+
+/* ==================================================
+   VÝBER OBCHODU Z MAPY
+================================================== */
+
+function vybratObchodZMapy(
+  obchod
+){
+
+  if(
+    !STORES.includes(
+      obchod
+    )
+  ){
+
+    return;
+
+  }
+
+
+  if(!currentDate){
+
+    const today=
+      new Date();
+
+
+    const offset=
+      today.getTimezoneOffset();
+
+
+    const localToday=
+      new Date(
+        today.getTime() -
+        offset * 60000
+      )
+      .toISOString()
+      .slice(
+        0,
+        10
+      );
+
+
+    ensureDate(
+      localToday
+    );
+
+
+    currentDate=
+      localToday;
+
+  }
+
+
+  currentStore=
+    obchod;
+
+
+  localStorage.setItem(
+    "poslednyObchod",
+    obchod
+  );
+
+
+  document
+    .getElementById(
+      "datesPage"
+    )
+    .classList.add(
+      "hidden"
+    );
+
+
+  document
+    .getElementById(
+      "shoppingPage"
+    )
+    .classList.remove(
+      "hidden"
+    );
+
+
+  document
+    .getElementById(
+      "selectedDate"
+    )
+    .textContent=
+      "📅 " +
+      formatDate(
+        currentDate
+      );
+
+
+  renderStores();
+
+  renderItems();
+
+}
+
+
+/* ==================================================
+   MOJA POLOHA
+================================================== */
+
+function mojaPoloha(){
+
+  const status=
+    document.getElementById(
+      "mapStatus"
+    );
+
+
+  if(
+    !navigator.geolocation
+  ){
+
+    if(status){
+
+      status.textContent=
+        "❌ Tvoj prehliadač nepodporuje polohu.";
+
+    }
+
+    return;
+
+  }
+
+
+  if(status){
+
+    status.textContent=
+      "📍 Získavam tvoju polohu...";
+
+  }
+
+
+  navigator.geolocation.getCurrentPosition(
+
+    function(position){
+
+      const lat=
+        position.coords.latitude;
+
+
+      const lng=
+        position.coords.longitude;
+
+
+      if(userMarker){
+
+        map.removeLayer(
+          userMarker
+        );
+
+      }
+
+
+      userMarker=
+        L.marker(
+
+          [
+            lat,
+            lng
+          ]
+
+        )
+        .addTo(
+          map
+        )
+        .bindPopup(
+          "📍 Tvoja poloha"
+        )
+        .openPopup();
+
+
+      map.setView(
+        [
+          lat,
+          lng
+        ],
+        15
+      );
+
+
+      if(status){
+
+        status.textContent=
+          "📍 Tvoja poloha bola nájdená.";
+
+      }
+
+    },
+
+
+    function(error){
+
+      console.error(
+        "Geolocation:",
+        error
+      );
+
+
+      if(status){
+
+        if(
+          error.code ===
+          1
+        ){
+
+          status.textContent=
+            "❌ Poloha bola zamietnutá.";
+
+        }else{
+
+          status.textContent=
+            "❌ Poloha sa nepodarila získať.";
+
+        }
+
+      }
+
+    },
+
+    {
+
+      enableHighAccuracy:true,
+
+      timeout:10000,
+
+      maximumAge:60000
+
+    }
+
+  );
+
+}
+
+
+/* ==================================================
+   NAVIGÁCIA
+================================================== */
+
+function navigovat(
+  lat,
+  lng
+){
+
+  const url=
+    "https://www.google.com/maps/dir/?api=1&destination="+
+    encodeURIComponent(
+      lat +
+      "," +
+      lng
+    );
+
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+}
+
+
+/* ==================================================
+   ENTER = PRIDAŤ POLOŽKU
+================================================== */
+
+document.addEventListener(
+
+  "DOMContentLoaded",
+
+  function(){
+
+    const itemName=
+      document.getElementById(
+        "itemName"
+      );
+
+
+    const itemQty=
+      document.getElementById(
+        "itemQty"
+      );
+
+
+    if(itemName){
+
+      itemName.addEventListener(
+
+        "keydown",
+
+        function(event){
+
+          if(
+            event.key ===
+            "Enter"
+          ){
+
+            event.preventDefault();
+
+            addItem();
+
+          }
+
+        }
+
+      );
+
+    }
+
+
+    if(itemQty){
+
+      itemQty.addEventListener(
+
+        "keydown",
+
+        function(event){
+
+          if(
+            event.key ===
+            "Enter"
+          ){
+
+            event.preventDefault();
+
+            addItem();
+
+          }
+
+        }
+
+      );
+
+    }
+
+
+    const newDate=
+      document.getElementById(
+        "newDate"
+      );
+
+
+    if(newDate){
+
+      /*
+       * Používa sa lokálny dátum,
+       * aby sa pri časovom pásme neposunul o deň.
+       */
+
+      const today=
+        new Date();
+
+
+      const offset=
+        today.getTimezoneOffset();
+
+
+      newDate.value=
+        new Date(
+          today.getTime() -
+          offset * 60000
+        )
+        .toISOString()
+        .slice(
+          0,
+          10
+        );
+
+    }
+
+
+    /*
+     * Vykreslenie dátumov
+     * aj bez čakania na Firebase.
+     */
+
+    renderDates();
+
+
+    /*
+     * Spustenie mapy.
+     */
+
+    vytvorMapu();
+
+
+    /*
+     * Pravidelná aktualizácia
+     * otvorené/zatvorené.
+     */
+
+    setInterval(
+
+      obnovitStavy,
+
+      60000
+
+    );
+
+  }
+
+);
+
+
+/* ==================================================
+   ŠTART
+================================================== */
+
+</script>
+
+</body>
+</html>
