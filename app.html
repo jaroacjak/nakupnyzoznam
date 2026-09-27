@@ -6,659 +6,595 @@
 
 <title>Nákupný kalendár</title>
 
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
+*{box-sizing:border-box}
 
-* {
-  box-sizing: border-box;
+body{
+  margin:0;
+  background:#f2f4f7;
+  color:#222;
+  font-family:Arial,sans-serif;
 }
 
-body {
-  margin: 0;
-  background: #f2f4f7;
-  color: #222;
-  font-family: Arial, sans-serif;
+.app{
+  max-width:950px;
+  margin:auto;
+  padding:16px;
 }
 
-.app {
-  max-width: 950px;
-  margin: auto;
-  padding: 16px;
+.card{
+  background:#fff;
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 5px 25px rgba(0,0,0,.08);
+  margin-bottom:16px;
 }
 
-.card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 5px 25px rgba(0,0,0,.08);
-  margin-bottom: 16px;
+h1{text-align:center;margin:5px 0 20px}
+h2{margin-top:5px}
+
+button,input{
+  font:inherit;
+  border-radius:10px;
 }
 
-h1 {
-  text-align: center;
-  margin: 5px 0 20px;
+button{cursor:pointer}
+
+input{
+  border:1px solid #ccc;
+  padding:11px;
+  width:100%;
 }
 
-h2 {
-  margin-top: 5px;
+.primary{
+  background:#222;
+  color:#fff;
+  border:0;
+  padding:11px 15px;
 }
 
-button,
-input {
-  font: inherit;
-  border-radius: 10px;
+.secondary{
+  background:#eee;
+  color:#222;
+  border:0;
+  padding:11px 15px;
 }
 
-button {
-  cursor: pointer;
+.danger{
+  background:#d9534f;
+  color:#fff;
+  border:0;
+  padding:10px 13px;
 }
 
-input {
-  border: 1px solid #ccc;
-  padding: 11px;
-  width: 100%;
+.success{
+  background:#198754;
+  color:#fff;
+  border:0;
+  padding:10px 13px;
 }
 
-.primary {
-  background: #222;
-  color: white;
-  border: 0;
-  padding: 11px 15px;
+.hidden{display:none!important}
+
+.top-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
 }
 
-.secondary {
-  background: #eee;
-  color: #222;
-  border: 0;
-  padding: 11px 15px;
+.user-info{min-width:0}
+
+.user-label{
+  font-size:12px;
+  color:#777;
 }
 
-.danger {
-  background: #d9534f;
-  color: white;
-  border: 0;
-  padding: 10px 13px;
+.user-email{
+  font-weight:bold;
+  margin-top:3px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 
-.hidden {
-  display: none !important;
+.logout-button{white-space:nowrap}
+
+.date-add{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  margin-bottom:18px;
 }
 
-
-/* =========================
-   HORNÁ LIŠTA
-========================= */
-
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.date-list{
+  display:grid;
+  gap:10px;
 }
 
-.user-info {
-  min-width: 0;
+.date-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:#fafafa;
+  border:1px solid #ddd;
+  border-radius:14px;
+  padding:14px;
 }
 
-.user-label {
-  font-size: 12px;
-  color: #777;
+.date-info{
+  flex:1;
+  cursor:pointer;
 }
 
-.user-email {
-  font-weight: bold;
-  margin-top: 3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.date-title{
+  font-weight:bold;
+  font-size:17px;
 }
 
-.logout-button {
-  white-space: nowrap;
+.date-meta{
+  margin-top:5px;
+  color:#777;
+  font-size:13px;
 }
 
-
-/* =========================
-   DÁTUMY
-========================= */
-
-.date-add {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  margin-bottom: 18px;
+.date-actions{
+  display:flex;
+  gap:6px;
 }
 
-.date-list {
-  display: grid;
-  gap: 10px;
+.empty{
+  text-align:center;
+  color:#888;
+  padding:30px 10px;
 }
 
-.date-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: #fafafa;
-  border: 1px solid #ddd;
-  border-radius: 14px;
-  padding: 14px;
+.stores{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:8px;
+  margin-bottom:15px;
 }
 
-.date-info {
-  flex: 1;
-  cursor: pointer;
+.store-button{
+  min-width:110px;
+  padding:10px;
+  border:0;
+  background:#eee;
+  white-space:nowrap;
 }
 
-.date-title {
-  font-weight: bold;
-  font-size: 17px;
+.store-button.active{
+  background:#222;
+  color:#fff;
 }
 
-.date-meta {
-  margin-top: 5px;
-  color: #777;
-  font-size: 13px;
+.shop-title{
+  margin:10px 0 15px;
 }
 
-.date-actions {
-  display: flex;
-  gap: 6px;
+.add-item{
+  display:grid;
+  grid-template-columns:1fr 90px 110px;
+  gap:8px;
+  margin-bottom:15px;
 }
 
-.empty {
-  text-align: center;
-  color: #888;
-  padding: 30px 10px;
+.item-list{display:grid}
+
+.item{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:12px 0;
+  border-bottom:1px solid #eee;
 }
 
+.item-checkbox{width:auto}
 
-/* =========================
-   OBCHODY
-========================= */
-
-.stores {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: 15px;
+.item-name{
+  flex:1;
+  min-width:0;
+  word-break:break-word;
 }
 
-.store-button {
-  min-width: 110px;
-  padding: 10px;
-  border: 0;
-  background: #eee;
-  white-space: nowrap;
+.item.done .item-name{
+  text-decoration:line-through;
+  opacity:.5;
 }
 
-.store-button.active {
-  background: #222;
-  color: white;
+.quantity{
+  display:flex;
+  align-items:center;
+  gap:5px;
 }
 
-.shop-title {
-  margin: 10px 0 15px;
+.quantity button{
+  width:32px;
+  height:32px;
+  padding:0;
+  border:0;
+  background:#eee;
 }
 
-
-/* =========================
-   POLOŽKY
-========================= */
-
-.add-item {
-  display: grid;
-  grid-template-columns: 1fr 90px 110px;
-  gap: 8px;
-  margin-bottom: 15px;
+.item-edit{
+  border:0;
+  background:#eee;
+  padding:8px 10px;
 }
 
-.item-list {
-  display: grid;
+.item-delete{
+  border:0;
+  background:#d9534f;
+  color:#fff;
+  padding:8px 10px;
 }
 
-.item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 12px 0;
-  border-bottom: 1px solid #eee;
+.bottom-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-top:18px;
 }
 
-.item-checkbox {
-  width: auto;
+.item-count{
+  color:#777;
+  font-size:13px;
 }
 
-.item-name {
-  flex: 1;
-  min-width: 0;
-  word-break: break-word;
+.share-box{
+  margin-top:20px;
+  padding:15px;
+  background:#f7f7f7;
+  border:1px solid #ddd;
+  border-radius:14px;
 }
 
-.item.done .item-name {
-  text-decoration: line-through;
-  opacity: .5;
+.share-title{
+  font-weight:bold;
+  margin-bottom:7px;
 }
 
-.quantity {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.share-description{
+  color:#777;
+  font-size:13px;
+  line-height:1.5;
+  margin-bottom:12px;
 }
 
-.quantity button {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  background: #eee;
+.share-form{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
 }
 
-.item-edit {
-  border: 0;
-  background: #eee;
-  padding: 8px 10px;
+.share-options{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:10px 0;
 }
 
-.item-delete {
-  border: 0;
-  background: #d9534f;
-  color: white;
-  padding: 8px 10px;
+.share-date-box{
+  margin-top:10px;
 }
 
-.bottom-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-top: 18px;
+.share-status{
+  margin-top:10px;
+  font-size:13px;
+  color:#777;
 }
 
-.item-count {
-  color: #777;
-  font-size: 13px;
+.shared-users{
+  margin-top:10px;
+  display:grid;
+  gap:7px;
 }
 
-
-/* =========================
-   MAPA
-========================= */
-
-.map-status {
-  background: #f1f1f1;
-  padding: 10px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  font-size: 14px;
+.shared-user{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:10px;
+  padding:9px;
+  font-size:14px;
 }
 
-.map-buttons {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
+.shared-date-list{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
 }
 
-.map-buttons button {
-  flex: 1;
+.shared-date-card{
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:14px;
+  padding:14px;
 }
 
-#map {
-  width: 100%;
-  height: 480px;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid #ddd;
+.shared-date-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
 }
 
-.shop-icon {
-  width: 44px;
-  height: 44px;
-  background: white;
-  border: 2px solid #222;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+.shared-owner{
+  color:#777;
+  font-size:13px;
+  margin-top:4px;
 }
 
-.shop-icon img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
+.shared-shop{
+  margin-top:12px;
+  border-top:1px solid #eee;
+  padding-top:10px;
 }
 
-.store-popup {
-  min-width: 240px;
-  text-align: center;
+.shared-item{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  padding:7px 0;
+  border-bottom:1px solid #f0f0f0;
 }
 
-.store-popup img {
-  width: 55px;
-  height: 55px;
-  object-fit: contain;
+.shared-item.done{
+  text-decoration:line-through;
+  opacity:.55;
 }
 
-.store-popup h3 {
-  margin: 7px 0;
+.map-status{
+  background:#f1f1f1;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  font-size:14px;
 }
 
-.store-popup p {
-  margin: 7px 0;
+.map-buttons{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
 }
 
-.store-popup button {
-  width: 100%;
-  margin-top: 7px;
+.map-buttons button{flex:1}
+
+#map{
+  width:100%;
+  height:480px;
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid #ddd;
 }
 
-.hours {
-  text-align: left;
-  font-size: 13px;
-  line-height: 1.6;
-  margin-top: 10px;
+.shop-icon{
+  width:44px;
+  height:44px;
+  background:#fff;
+  border:2px solid #222;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.35);
 }
 
-
-/* =========================
-   ZDIEĽANIE
-========================= */
-
-.share-box {
-  margin-top: 20px;
-  padding: 15px;
-  background: #f7f7f7;
-  border: 1px solid #ddd;
-  border-radius: 14px;
+.shop-icon img{
+  width:36px;
+  height:36px;
+  object-fit:contain;
 }
 
-.share-title {
-  font-weight: bold;
-  margin-bottom: 7px;
+.store-popup{
+  min-width:240px;
+  text-align:center;
 }
 
-.share-description {
-  color: #777;
-  font-size: 13px;
-  line-height: 1.5;
-  margin-bottom: 12px;
+.store-popup img{
+  width:55px;
+  height:55px;
+  object-fit:contain;
 }
 
-.share-form {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
+.store-popup h3{margin:7px 0}
+.store-popup p{margin:7px 0}
+
+.store-popup button{
+  width:100%;
+  margin-top:7px;
 }
 
-.share-status {
-  margin-top: 10px;
-  font-size: 13px;
-  color: #777;
+.hours{
+  text-align:left;
+  font-size:13px;
+  line-height:1.6;
+  margin-top:10px;
 }
 
-.shared-users {
-  margin-top: 10px;
-  display: grid;
-  gap: 7px;
-}
-
-.shared-user {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 9px;
-  font-size: 14px;
-}
-
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 650px) {
-
-  .top-bar {
-    align-items: flex-start;
-    flex-direction: column;
+@media(max-width:650px){
+  .top-bar{
+    align-items:flex-start;
+    flex-direction:column;
   }
 
-  .logout-button {
-    width: 100%;
+  .logout-button{width:100%}
+
+  .date-add{grid-template-columns:1fr}
+
+  .date-row{
+    align-items:flex-start;
+    flex-direction:column;
   }
 
-  .date-add {
-    grid-template-columns: 1fr;
+  .date-actions{width:100%}
+
+  .date-actions button{flex:1}
+
+  .add-item{
+    grid-template-columns:1fr 80px;
   }
 
-  .date-row {
-    align-items: flex-start;
-    flex-direction: column;
+  .add-item button{
+    grid-column:1/-1;
   }
 
-  .date-actions {
-    width: 100%;
+  .item{flex-wrap:wrap}
+
+  .item-name{
+    min-width:calc(100% - 40px);
   }
 
-  .date-actions button {
-    flex: 1;
+  .bottom-bar{
+    align-items:flex-start;
+    flex-direction:column;
   }
 
-  .add-item {
-    grid-template-columns: 1fr 80px;
+  .share-form{
+    grid-template-columns:1fr;
   }
 
-  .add-item button {
-    grid-column: 1 / -1;
+  .share-options{
+    grid-template-columns:1fr;
   }
 
-  .item {
-    flex-wrap: wrap;
-  }
-
-  .item-name {
-    min-width: calc(100% - 40px);
-  }
-
-  .bottom-bar {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .share-form {
-    grid-template-columns: 1fr;
-  }
-
-  #map {
-    height: 420px;
-  }
-
+  #map{height:420px}
 }
-
 </style>
 </head>
-
 
 <body>
 
 <div class="app">
 
-
-<!-- ==================================================
-     PRIHLÁSENÝ POUŽÍVATEĽ
-================================================== -->
-
 <section class="card">
-
   <div class="top-bar">
-
     <div class="user-info">
-
-      <div class="user-label">
-        Prihlásený používateľ
-      </div>
-
-      <div
-        id="currentUser"
-        class="user-email"
-      >
-        Načítavam...
-      </div>
-
+      <div class="user-label">Prihlásený používateľ</div>
+      <div id="currentUser" class="user-email">Načítavam...</div>
     </div>
 
-    <button
-      class="danger logout-button"
-      onclick="logout()"
-    >
+    <button class="danger logout-button" onclick="logout()">
       🚪 Odhlásiť sa
     </button>
-
   </div>
-
 </section>
 
 
-<!-- ==================================================
-     HLAVNÁ STRÁNKA – DÁTUMY
-================================================== -->
+<section id="datesPage" class="card">
 
-<section
-  id="datesPage"
-  class="card"
->
+  <h1>🛒 Nákupný kalendár</h1>
 
-  <h1>
-    🛒 Nákupný kalendár
-  </h1>
-
-  <h2>
-    📅 Nákupné dátumy
-  </h2>
+  <h2>📅 Nákupné dátumy</h2>
 
   <p>
-    Každý dátum má svoj vlastný nákupný zoznam.
+    Každý dátum má vlastný nákupný zoznam.
   </p>
 
-
   <div class="date-add">
+    <input id="newDate" type="date">
 
-    <input
-      id="newDate"
-      type="date"
-    >
-
-    <button
-      class="primary"
-      onclick="addDate()"
-    >
+    <button class="primary" onclick="addDate()">
       ➕ Pridať dátum
     </button>
-
   </div>
 
+  <div id="dateList" class="date-list"></div>
 
-  <div
-    id="dateList"
-    class="date-list"
-  ></div>
-
-
-  <!-- ZDIEĽANIE -->
 
   <div class="share-box">
 
     <div class="share-title">
-      👥 Zdieľanie
+      👥 Zdieľanie nákupného zoznamu
     </div>
 
     <div class="share-description">
-
-      Zadaj e-mail používateľa,
-      s ktorým chceš zdieľať svoje nákupné zoznamy.
-
+      Zadaj e-mail používateľa. Môžeš zdieľať jeden konkrétny dátum
+      alebo všetky zoznamy dlhodobo.
     </div>
 
     <div class="share-form">
-
       <input
         id="shareEmail"
         type="email"
         placeholder="E-mail používateľa"
       >
 
-      <button
-        class="primary"
-        onclick="shareList()"
-      >
+      <button class="primary" onclick="shareList()">
         👥 Zdieľať
       </button>
+    </div>
+
+    <div class="share-options">
+
+      <label>
+        <input
+          id="shareLongTerm"
+          type="checkbox"
+          onchange="updateShareDateVisibility()"
+        >
+        ♾️ Dlhodobo – všetky dátumy
+      </label>
+
+      <div id="shareDateBox" class="share-date-box">
+        <input id="shareDate" type="date">
+      </div>
 
     </div>
 
-    <div
-      id="shareStatus"
-      class="share-status"
-    ></div>
+    <div id="shareStatus" class="share-status"></div>
 
-    <div
-      id="sharedUsers"
-      class="shared-users"
-    ></div>
+    <div class="share-title" style="margin-top:15px">
+      👥 Moje zdieľania
+    </div>
+
+    <div id="sharedUsers" class="shared-users"></div>
+
+  </div>
+
+
+  <div class="share-box">
+
+    <div class="share-title">
+      📥 Zdieľané so mnou
+    </div>
+
+    <div class="share-description">
+      Tu vidíš nákupné zoznamy, ktoré s tebou zdieľali iní používatelia.
+      Tvoj vlastný zoznam zostáva oddelený.
+    </div>
+
+    <div id="incomingSharedLists" class="shared-date-list"></div>
 
   </div>
 
 </section>
 
 
-<!-- ==================================================
-     NÁKUPNÝ ZOZNAM KONKRÉTNEHO DÁTUMU
-================================================== -->
+<section id="shoppingPage" class="card hidden">
 
-<section
-  id="shoppingPage"
-  class="card hidden"
->
-
-  <button
-    class="secondary"
-    onclick="showDates()"
-  >
+  <button class="secondary" onclick="showDates()">
     ← Späť na dátumy
   </button>
 
+  <h2 id="selectedDate"></h2>
 
-  <h2
-    id="selectedDate"
-  ></h2>
+  <h3>🏪 Vyber obchod</h3>
 
+  <div id="stores" class="stores"></div>
 
-  <h3>
-    🏪 Vyber obchod
-  </h3>
-
-
-  <div
-    id="stores"
-    class="stores"
-  ></div>
-
-
-  <h3
-    id="shopTitle"
-    class="shop-title"
-  ></h3>
-
+  <h3 id="shopTitle" class="shop-title"></h3>
 
   <div class="add-item">
 
@@ -676,34 +612,19 @@ input {
       value="1"
     >
 
-    <button
-      class="primary"
-      onclick="addItem()"
-    >
+    <button class="primary" onclick="addItem()">
       ➕ Pridať
     </button>
 
   </div>
 
-
-  <div
-    id="itemList"
-    class="item-list"
-  ></div>
-
+  <div id="itemList" class="item-list"></div>
 
   <div class="bottom-bar">
 
-    <span
-      id="itemCount"
-      class="item-count"
-    >
-    </span>
+    <span id="itemCount" class="item-count"></span>
 
-    <button
-      class="danger"
-      onclick="clearBought()"
-    >
+    <button class="danger" onclick="clearBought()">
       🗑️ Vymazať kúpené
     </button>
 
@@ -712,31 +633,19 @@ input {
 </section>
 
 
-<!-- ==================================================
-     MAPA OBCHODOV
-================================================== -->
-
 <section class="card">
 
-  <h2>
-    🗺️ Predajne
-  </h2>
+  <h2>🗺️ Predajne</h2>
 
   <div class="map-buttons">
 
-    <button
-      class="primary"
-      onclick="mojaPoloha()"
-    >
+    <button class="primary" onclick="mojaPoloha()">
       📍 Moja poloha
     </button>
 
   </div>
 
-  <div
-    id="mapStatus"
-    class="map-status"
-  >
+  <div id="mapStatus" class="map-status">
     🗺️ Načítavam mapu...
   </div>
 
@@ -744,86 +653,40 @@ input {
 
 </section>
 
-
 </div>
 
 
-<!-- ==================================================
-     FIREBASE
-================================================== -->
-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
 
 <script>
 
 const firebaseConfig = {
-
-  apiKey:
-    "AIzaSyB5Gv-H-Sm8JKz9pqfN6hhbKYUlfVK4vzE",
-
-  authDomain:
-    "nakupnyzoznam-1a04e.firebaseapp.com",
-
-  databaseURL:
-    "https://nakupnyzoznam-1a04e-default-rtdb.firebaseio.com",
-
-  projectId:
-    "nakupnyzoznam-1a04e",
-
-  storageBucket:
-    "nakupnyzoznam-1a04e.firebasestorage.app",
-
-  messagingSenderId:
-    "307268915654",
-
-  appId:
-    "1:307268915654:web:7de04a52585181dd0fe2c7",
-
-  measurementId:
-    "G-VZR504GLW7"
-
+  apiKey:"AIzaSyB5Gv-H-Sm8JKz9pqfN6hhbKYUlfVK4vzE",
+  authDomain:"nakupnyzoznam-1a04e.firebaseapp.com",
+  databaseURL:"https://nakupnyzoznam-1a04e-default-rtdb.firebaseio.com",
+  projectId:"nakupnyzoznam-1a04e",
+  storageBucket:"nakupnyzoznam-1a04e.firebasestorage.app",
+  messagingSenderId:"307268915654",
+  appId:"1:307268915654:web:7de04a52585181dd0fe2c7",
+  measurementId:"G-VZR504GLW7"
 };
 
-
-if (!firebase.apps.length) {
-
-  firebase.initializeApp(
-    firebaseConfig
-  );
-
+if(!firebase.apps.length){
+  firebase.initializeApp(firebaseConfig);
 }
 
-
-const auth =
-  firebase.auth();
-
-const firebaseDatabase =
-  firebase.database();
+const auth=firebase.auth();
+const firebaseDatabase=firebase.database();
 
 </script>
 
-
-<!-- ==================================================
-     LEAFLET
-================================================== -->
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 
 <script>
 
-
-/* ==================================================
-   NASTAVENIA
-================================================== */
-
-const STORES = [
-
+const STORES=[
   "Lidl",
   "Kaufland",
   "Tesco",
@@ -833,264 +696,191 @@ const STORES = [
   "Penny",
   "Koruna Potraviny",
   "Iné"
-
 ];
 
-
-/*
- * Firebase cesta:
- *
- * users / UID / shoppingData / DATUM / OBCHOD
- *
- * Napríklad:
- *
- * users
- *   └── ABC123
- *       └── shoppingData
- *           └── 2026-09-23
- *               └── Lidl
- *                   ├── item-1
- *                   └── item-2
- */
-
-
-let database = {};
-
-let currentDate = null;
-
-let currentStore = null;
-
-let currentFirebaseUser = null;
-
-let map = null;
-
-let userMarker = null;
-
-let storeMarkers = [];
+let database={};
+let currentDate=null;
+let currentStore=null;
+let currentFirebaseUser=null;
+let map=null;
+let userMarker=null;
+let storeMarkers=[];
 
 
 /* ==================================================
-   ÚDAJE O PREDAJNIACH
+   PREDAJNE
 ================================================== */
 
-const STORE_DATA = {
+const STORE_DATA={
 
-  "Lidl": [
-
+  "Lidl":[
     {
-      name: "Lidl Bytča",
-
-      lat: 49.222110,
-
-      lng: 18.566888,
-
-      address:
-        "Hlavná 2025/7, 014 01 Bytča",
-
-      logo:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIuwFw2691OFu2tnBQLkZoPMRo12gnJ3FZa5H_jAApvw&s=10",
-
-      hours: {
-        1: ["07:00","21:00"],
-        2: ["07:00","21:00"],
-        3: ["07:00","21:00"],
-        4: ["07:00","21:00"],
-        5: ["07:00","21:00"],
-        6: ["07:00","21:00"],
-        0: ["08:00","20:00"]
+      name:"Lidl Bytča",
+      lat:49.222110,
+      lng:18.566888,
+      address:"Hlavná 2025/7, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIuwFw2691OFu2tnBQLkZoPMRo12gnJ3FZa5H_jAApvw&s=10",
+      hours:{
+        1:["07:00","21:00"],
+        2:["07:00","21:00"],
+        3:["07:00","21:00"],
+        4:["07:00","21:00"],
+        5:["07:00","21:00"],
+        6:["07:00","21:00"],
+        0:["08:00","20:00"]
       }
     }
-
   ],
 
-
-  "Kaufland": [
-
+  "Kaufland":[
     {
-      name: "Kaufland Bytča",
-
-      lat: 49.216362,
-
-      lng: 18.559423,
-
-      address:
-        "Hlavná 2033, 014 01 Bytča",
-
-      logo:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHgo_B_QJiQ-opGdnYZm8cMirVNIWBhehckLea9EJRmg&s=10",
-
-      hours: {
-        1: ["07:00","21:00"],
-        2: ["07:00","21:00"],
-        3: ["07:00","21:00"],
-        4: ["07:00","21:00"],
-        5: ["07:00","21:00"],
-        6: ["07:00","21:00"],
-        0: ["08:00","20:00"]
+      name:"Kaufland Bytča",
+      lat:49.216362,
+      lng:18.559423,
+      address:"Hlavná 2033, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHgo_B_QJiQ-opGdnYZm8cMirVNIWBhehckLea9EJRmg&s=10",
+      hours:{
+        1:["07:00","21:00"],
+        2:["07:00","21:00"],
+        3:["07:00","21:00"],
+        4:["07:00","21:00"],
+        5:["07:00","21:00"],
+        6:["07:00","21:00"],
+        0:["08:00","20:00"]
       }
     }
-
   ],
 
+  "Tesco":[],
 
-  "Tesco": [],
-
-
-  "Billa": [
-
+  "Billa":[
     {
-      name: "Billa Bytča",
-
-      lat: 49.222950,
-
-      lng: 18.564807,
-
-      address:
-        "Hlavná 1363, 014 01 Bytča",
-
-      logo:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVxNDirsr9_4_HngNI5eb_mkiL7YeSr26FKiGSKrEL6g&s=10",
-
-      hours: {
-        1: ["07:00","21:00"],
-        2: ["07:00","21:00"],
-        3: ["07:00","21:00"],
-        4: ["07:00","21:00"],
-        5: ["07:00","21:00"],
-        6: ["07:00","21:00"],
-        0: ["08:00","20:00"]
+      name:"Billa Bytča",
+      lat:49.222950,
+      lng:18.564807,
+      address:"Hlavná 1363, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVxNDirsr9_4_HngNI5eb_mkiL7YeSr26FKiGSKrEL6g&s=10",
+      hours:{
+        1:["07:00","21:00"],
+        2:["07:00","21:00"],
+        3:["07:00","21:00"],
+        4:["07:00","21:00"],
+        5:["07:00","21:00"],
+        6:["07:00","21:00"],
+        0:["08:00","20:00"]
       }
     }
-
   ],
 
-
-  "COOP Jednota": [
-
-    {
-      name: "COOP Jednota Bytča",
-
-      lat: 49.223857,
-
-      lng: 18.557885,
-
-      address:
-        "Námestie Slovenskej republiky 10, 014 01 Bytča",
-
-      logo:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
-
-      hours: {
-        1: ["05:45","18:00"],
-        2: ["05:45","18:00"],
-        3: ["05:45","18:00"],
-        4: ["05:45","18:00"],
-        5: ["05:45","18:00"],
-        6: ["05:45","13:00"],
-        0: ["07:30","12:00"]
-      }
-    }
-
-  ],
-
-
-  "Terno": [],
-
-
-  "Penny": [],
-
-
-  "Koruna Potraviny": [
+  "COOP Jednota":[
 
     {
-      name: "Koruna Potraviny – Komenského",
-
-      lat: 49.223983,
-
-      lng: 18.554310,
-
-      address:
-        "Komenského 5, 014 01 Bytča",
-
-      logo:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt9pQfLGEs_tQf5ibTwOy4DkQe8Fr3QbafzXBxWlMk9A&s=10",
-
-      hours: {
-        1: ["06:00","19:00"],
-        2: ["06:00","19:00"],
-        3: ["06:00","19:00"],
-        4: ["06:00","19:00"],
-        5: ["06:00","19:00"],
-        6: ["06:00","14:00"],
-        0: ["07:00","12:00"]
+      name:"COOP Jednota Bytča",
+      lat:49.223857,
+      lng:18.557885,
+      address:"Námestie Slovenskej republiky 10, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
+      hours:{
+        1:["05:45","18:00"],
+        2:["05:45","18:00"],
+        3:["05:45","18:00"],
+        4:["05:45","18:00"],
+        5:["05:45","18:00"],
+        6:["05:45","13:00"],
+        0:["07:30","12:00"]
       }
     },
 
-
     {
-      name: "Koruna Potraviny",
-
-      lat: 49.221383,
-
-      lng: 18.559506,
-
-      address:
-        "Bytča",
-
-      logo:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt9pQfLGEs_tQf5ibTwOy4DkQe8Fr3QbafzXBxWlMk9A&s=10",
-
-      hours: {
-        1: ["06:00","17:00"],
-        2: ["06:00","17:00"],
-        3: ["06:00","17:00"],
-        4: ["06:00","17:00"],
-        5: ["07:00","18:00"],
-        6: ["06:45","12:30"],
-        0: null
+      name:"COOP Jednota Supermarket Bytča – Thurzove sady",
+      lat:49.218030,
+      lng:18.542893,
+      address:"Thurzove sady, Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
+      hours:{
+        1:["06:00","19:00"],
+        2:["06:00","19:00"],
+        3:["06:00","19:00"],
+        4:["06:00","19:00"],
+        5:["06:00","19:00"],
+        6:["06:00","13:00"],
+        0:["06:00","12:00"]
       }
     }
 
   ],
 
+  "Terno":[],
 
-  "Iné": []
+  "Penny":[],
+
+  "Koruna Potraviny":[
+
+    {
+      name:"Koruna Potraviny – Komenského",
+      lat:49.223983,
+      lng:18.554310,
+      address:"Komenského 5, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt9pQfLGEs_tQf5ibTwOy4DkQe8Fr3QbafzXBxWlMk9A&s=10",
+      hours:{
+        1:["06:00","19:00"],
+        2:["06:00","19:00"],
+        3:["06:00","19:00"],
+        4:["06:00","19:00"],
+        5:["06:00","19:00"],
+        6:["06:00","14:00"],
+        0:["07:00","12:00"]
+      }
+    },
+
+    {
+      name:"Koruna Potraviny",
+      lat:49.221383,
+      lng:18.559506,
+      address:"Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt9pQfLGEs_tQf5ibTwOy4DkQe8Fr3QbafzXBxWlMk9A&s=10",
+      hours:{
+        1:["06:00","17:00"],
+        2:["06:00","17:00"],
+        3:["06:00","17:00"],
+        4:["06:00","17:00"],
+        5:["07:00","18:00"],
+        6:["06:45","12:30"],
+        0:null
+      }
+    }
+
+  ],
+
+  "Iné":[]
 
 };
 
 
 /* ==================================================
-   LOKÁLNY DÁTUM
+   DÁTUM
 ================================================== */
 
-function getLocalDateString() {
+function getLocalDateString(){
 
-  const now = new Date();
-
-  const offset =
-    now.getTimezoneOffset();
+  const now=new Date();
+  const offset=now.getTimezoneOffset();
 
   return new Date(
-    now.getTime() -
-    offset * 60000
-  )
-  .toISOString()
-  .slice(0,10);
+    now.getTime()-offset*60000
+  ).toISOString().slice(0,10);
 
 }
 
 
 /* ==================================================
-   ÚNIKOVÉ HTML
+   HTML
 ================================================== */
 
-function escapeHtml(value) {
+function escapeHtml(value){
 
-  const div =
-    document.createElement("div");
-
-  div.textContent =
-    String(value ?? "");
+  const div=document.createElement("div");
+  div.textContent=String(value ?? "");
 
   return div.innerHTML;
 
@@ -1098,34 +888,24 @@ function escapeHtml(value) {
 
 
 /* ==================================================
-   ZABEZPEČENIE ŠTRUKTÚRY DÁT
+   ŠTRUKTÚRA
 ================================================== */
 
-function ensureDate(date) {
+function ensureDate(date){
 
-  if (!date) {
-    return;
-  }
+  if(!date)return;
 
-  if (
-    !database[date] ||
-    typeof database[date] !== "object"
-  ) {
+  if(!database[date] ||
+     typeof database[date]!=="object"){
 
-    database[date] = {};
+    database[date]={};
 
   }
 
-  STORES.forEach(function(store) {
+  STORES.forEach(function(store){
 
-    if (
-      !Array.isArray(
-        database[date][store]
-      )
-    ) {
-
-      database[date][store] = [];
-
+    if(!Array.isArray(database[date][store])){
+      database[date][store]=[];
     }
 
   });
@@ -1134,66 +914,98 @@ function ensureDate(date) {
 
 
 /* ==================================================
-   FIREBASE PRIHLÁSENIE
+   PRIHLÁSENIE
 ================================================== */
 
-auth.onAuthStateChanged(function(user) {
+auth.onAuthStateChanged(function(user){
 
-  if (!user) {
+  if(!user){
 
-    window.location.href =
-      "login.html";
-
+    window.location.href="login.html";
     return;
 
   }
 
-  currentFirebaseUser =
-    user;
+  currentFirebaseUser=user;
 
+  const userElement=document.getElementById("currentUser");
 
-  const userElement =
-    document.getElementById(
-      "currentUser"
-    );
+  if(userElement){
 
-
-  if (userElement) {
-
-    userElement.textContent =
+    userElement.textContent=
       user.email ||
       user.displayName ||
       "Používateľ";
 
   }
 
-
+  registerPublicUser();
   loadFirebaseData();
-
   loadSharing();
+  loadIncomingSharedLists();
 
 });
+
+
+/* ==================================================
+   VEREJNÝ INDEX E-MAIL -> UID
+================================================== */
+
+function emailKey(email){
+
+  return encodeURIComponent(
+    normalizeEmail(email)
+  ).replace(/\./g,"%2E");
+
+}
+
+
+function registerPublicUser(){
+
+  if(!currentFirebaseUser ||
+     !currentFirebaseUser.email){
+
+    return Promise.resolve();
+
+  }
+
+  const email=normalizeEmail(
+    currentFirebaseUser.email
+  );
+
+  return firebaseDatabase
+    .ref("publicUsers/"+emailKey(email))
+    .set({
+      uid:currentFirebaseUser.uid,
+      email:email
+    })
+    .catch(function(error){
+
+      console.error(
+        "Registrácia používateľa:",
+        error
+      );
+
+    });
+
+}
 
 
 /* ==================================================
    ODHLÁSENIE
 ================================================== */
 
-function logout() {
+function logout(){
 
   auth.signOut()
-    .then(function() {
+    .then(function(){
 
-      window.location.href =
-        "index.html";
+      window.location.href="index.html";
 
     })
-    .catch(function(error) {
+    .catch(function(error){
 
-      console.error(
-        "Odhlásenie:",
-        error
-      );
+      console.error("Odhlásenie:",error);
 
       alert(
         "Odhlásenie sa nepodarilo."
@@ -1205,23 +1017,19 @@ function logout() {
 
 
 /* ==================================================
-   ULOŽENIE DÁT DO FIREBASE
+   ULOŽENIE VLASTNÝCH DÁT
 ================================================== */
 
-function save() {
+function save(){
 
-  /*
-   * Lokálna záloha.
-   */
-
-  try {
+  try{
 
     localStorage.setItem(
       "nakupnyKalendárV2",
       JSON.stringify(database)
     );
 
-  } catch (error) {
+  }catch(error){
 
     console.error(
       "LocalStorage:",
@@ -1230,17 +1038,11 @@ function save() {
 
   }
 
-
-  /*
-   * Firebase.
-   */
-
-  if (!currentFirebaseUser) {
+  if(!currentFirebaseUser){
 
     return Promise.resolve();
 
   }
-
 
   return firebaseDatabase
     .ref(
@@ -1249,22 +1051,25 @@ function save() {
       "/shoppingData"
     )
     .set(database)
-    .then(function() {
+    .then(function(){
 
       console.log(
-        "Dáta uložené do Firebase."
+        "✅ Dáta uložené do Firebase."
       );
 
+      return syncAllShares();
+
     })
-    .catch(function(error) {
+    .catch(function(error){
 
       console.error(
-        "Firebase uloženie:",
+        "❌ Firebase uloženie:",
         error
       );
 
       alert(
-        "Dáta sa nepodarilo uložiť do databázy."
+        "Dáta sa nepodarilo uložiť do Firebase: "+
+        error.message
       );
 
       throw error;
@@ -1275,15 +1080,12 @@ function save() {
 
 
 /* ==================================================
-   NAČÍTANIE DÁT Z FIREBASE
+   NAČÍTANIE VLASTNÝCH DÁT
 ================================================== */
 
-function loadFirebaseData() {
+function loadFirebaseData(){
 
-  if (!currentFirebaseUser) {
-    return;
-  }
-
+  if(!currentFirebaseUser)return;
 
   firebaseDatabase
     .ref(
@@ -1292,84 +1094,56 @@ function loadFirebaseData() {
       "/shoppingData"
     )
     .once("value")
-    .then(function(snapshot) {
+    .then(function(snapshot){
 
-      const data =
-        snapshot.val();
+      const data=snapshot.val();
 
-
-      if (
-        data &&
-        typeof data === "object"
-      ) {
-
-        database = data;
-
-      } else {
-
-        database = {};
-
+      if(data && typeof data==="object"){
+        database=data;
+      }else{
+        database={};
       }
 
+      Object.keys(database).forEach(function(date){
+        ensureDate(date);
+      });
 
-      /*
-       * Zabezpečíme správnu štruktúru
-       * starších dát.
-       */
-
-      Object.keys(database)
-        .forEach(function(date) {
-
-          ensureDate(date);
-
-        });
-
-
-      try {
+      try{
 
         localStorage.setItem(
           "nakupnyKalendárV2",
           JSON.stringify(database)
         );
 
-      } catch (error) {
+      }catch(error){
 
         console.error(error);
 
       }
 
-
       renderDates();
 
     })
-    .catch(function(error) {
+    .catch(function(error){
 
       console.error(
         "Firebase načítanie:",
         error
       );
 
+      try{
 
-      /*
-       * Ak Firebase nefunguje,
-       * použije sa lokálna záloha.
-       */
+        database=JSON.parse(
+          localStorage.getItem(
+            "nakupnyKalendárV2"
+          ) || "{}"
+        );
 
-      try {
+      }catch(e){
 
-        database =
-          JSON.parse(
-            localStorage.getItem(
-              "nakupnyKalendárV2"
-            ) || "{}"
-          );
-
-      } catch (e) {
-
-        database = {};
+        database={};
 
       }
-
 
       renderDates();
 
@@ -1382,20 +1156,18 @@ function loadFirebaseData() {
    FORMÁT DÁTUMU
 ================================================== */
 
-function formatDate(date) {
+function formatDate(date){
 
   return new Intl.DateTimeFormat(
     "sk-SK",
     {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
+      weekday:"long",
+      day:"numeric",
+      month:"long",
+      year:"numeric"
     }
   ).format(
-    new Date(
-      date + "T12:00:00"
-    )
+    new Date(date+"T12:00:00")
   );
 
 }
@@ -1405,83 +1177,45 @@ function formatDate(date) {
    PRIDAŤ DÁTUM
 ================================================== */
 
-function addDate() {
+function addDate(){
 
-  const input =
-    document.getElementById(
-      "newDate"
-    );
+  const input=document.getElementById("newDate");
+  const date=input.value;
 
+  if(!date){
 
-  const date =
-    input.value;
-
-
-  if (!date) {
-
-    alert(
-      "Vyber dátum."
-    );
-
+    alert("Vyber dátum.");
     input.focus();
-
     return;
 
   }
 
-
-  /*
-   * Ak dátum ešte neexistuje,
-   * vytvoríme ho.
-   */
-
-  if (!database[date]) {
-
-    database[date] = {};
-
+  if(!database[date]){
+    database[date]={};
   }
-
 
   ensureDate(date);
 
-
-  /*
-   * Uloženie do databázy.
-   */
-
   save()
-    .then(function() {
+    .then(function(){
 
-      currentDate = date;
+      currentDate=date;
 
-      currentStore =
+      currentStore=
         localStorage.getItem(
           "poslednyObchod"
         ) || "Lidl";
 
-
-      if (
-        !STORES.includes(
-          currentStore
-        )
-      ) {
-
-        currentStore = "Lidl";
-
+      if(!STORES.includes(currentStore)){
+        currentStore="Lidl";
       }
-
 
       openShoppingPage();
 
     })
-    .catch(function() {
+    .catch(function(){
 
-      /*
-       * Dátum zostane aj lokálne.
-       */
-
-      currentDate = date;
-
+      currentDate=date;
       openShoppingPage();
 
     });
@@ -1493,22 +1227,18 @@ function addDate() {
    ZOBRAZIŤ DÁTUMY
 ================================================== */
 
-function showDates() {
+function showDates(){
 
-  currentDate = null;
-
-  currentStore = null;
-
+  currentDate=null;
+  currentStore=null;
 
   document
     .getElementById("shoppingPage")
     .classList.add("hidden");
 
-
   document
     .getElementById("datesPage")
     .classList.remove("hidden");
-
 
   renderDates();
 
@@ -1516,31 +1246,22 @@ function showDates() {
 
 
 /* ==================================================
-   VYKRESLIŤ DÁTUMY
+   DÁTUMY
 ================================================== */
 
-function renderDates() {
+function renderDates(){
 
-  const list =
-    document.getElementById(
-      "dateList"
-    );
+  const list=document.getElementById("dateList");
 
+  if(!list)return;
 
-  if (!list) {
-    return;
-  }
+  const dates=Object.keys(database)
+    .sort()
+    .reverse();
 
+  if(!dates.length){
 
-  const dates =
-    Object.keys(database)
-      .sort()
-      .reverse();
-
-
-  if (!dates.length) {
-
-    list.innerHTML = `
+    list.innerHTML=`
       <div class="empty">
         Zatiaľ nemáš žiadny dátum.
         <br><br>
@@ -1553,93 +1274,77 @@ function renderDates() {
 
   }
 
+  list.innerHTML=dates.map(function(date){
 
-  list.innerHTML =
-    dates.map(function(date) {
+    ensureDate(date);
 
-      ensureDate(date);
+    let total=0;
+    let bought=0;
 
+    STORES.forEach(function(store){
 
-      let total = 0;
+      const items=
+        Array.isArray(database[date][store])
+          ? database[date][store]
+          : [];
 
-      let bought = 0;
+      total+=items.length;
 
+      bought+=items.filter(function(item){
+        return item.done===true;
+      }).length;
 
-      STORES.forEach(function(store) {
+    });
 
-        const items =
-          Array.isArray(
-            database[date][store]
-          )
-            ? database[date][store]
-            : [];
+    return`
+      <div class="date-row">
 
+        <div
+          class="date-info"
+          onclick="openDate('${date}')"
+        >
 
-        total += items.length;
-
-
-        bought +=
-          items.filter(function(item) {
-
-            return item.done === true;
-
-          }).length;
-
-      });
-
-
-      return `
-        <div class="date-row">
-
-          <div
-            class="date-info"
-            onclick="openDate('${date}')"
-          >
-
-            <div class="date-title">
-              📅 ${escapeHtml(
-                formatDate(date)
-              )}
-            </div>
-
-            <div class="date-meta">
-              ${total} položiek
-              •
-              ${bought} kúpených
-            </div>
-
+          <div class="date-title">
+            📅 ${escapeHtml(formatDate(date))}
           </div>
 
-
-          <div class="date-actions">
-
-            <button
-              class="primary"
-              onclick="openDate('${date}')"
-            >
-              Otvoriť
-            </button>
-
-            <button
-              class="secondary"
-              onclick="editDate('${date}')"
-            >
-              ✏️
-            </button>
-
-            <button
-              class="danger"
-              onclick="deleteDate('${date}')"
-            >
-              🗑️
-            </button>
-
+          <div class="date-meta">
+            ${total} položiek
+            •
+            ${bought} kúpených
           </div>
 
         </div>
-      `;
 
-    }).join("");
+        <div class="date-actions">
+
+          <button
+            class="primary"
+            onclick="openDate('${date}')"
+          >
+            Otvoriť
+          </button>
+
+          <button
+            class="secondary"
+            onclick="editDate('${date}')"
+          >
+            ✏️
+          </button>
+
+          <button
+            class="danger"
+            onclick="deleteDate('${date}')"
+          >
+            🗑️
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  }).join("");
 
 }
 
@@ -1648,38 +1353,24 @@ function renderDates() {
    OTVORIŤ DÁTUM
 ================================================== */
 
-function openDate(date) {
+function openDate(date){
 
-  if (!database[date]) {
-
-    database[date] = {};
-
+  if(!database[date]){
+    database[date]={};
   }
-
 
   ensureDate(date);
 
+  currentDate=date;
 
-  currentDate =
-    date;
-
-
-  currentStore =
+  currentStore=
     localStorage.getItem(
       "poslednyObchod"
     ) || "Lidl";
 
-
-  if (
-    !STORES.includes(
-      currentStore
-    )
-  ) {
-
-    currentStore = "Lidl";
-
+  if(!STORES.includes(currentStore)){
+    currentStore="Lidl";
   }
-
 
   openShoppingPage();
 
@@ -1687,42 +1378,29 @@ function openDate(date) {
 
 
 /* ==================================================
-   OTVORIŤ NÁKUPNÝ ZOZNAM
+   NÁKUPNÝ ZOZNAM
 ================================================== */
 
-function openShoppingPage() {
+function openShoppingPage(){
 
-  if (!currentDate) {
-    return;
-  }
+  if(!currentDate)return;
 
-
-  ensureDate(
-    currentDate
-  );
-
+  ensureDate(currentDate);
 
   document
     .getElementById("datesPage")
     .classList.add("hidden");
 
-
   document
     .getElementById("shoppingPage")
     .classList.remove("hidden");
 
-
   document
     .getElementById("selectedDate")
-    .textContent =
-      "📅 " +
-      formatDate(
-        currentDate
-      );
-
+    .textContent=
+      "📅 "+formatDate(currentDate);
 
   renderStores();
-
   renderItems();
 
 }
@@ -1732,29 +1410,18 @@ function openShoppingPage() {
    UPRAVIŤ DÁTUM
 ================================================== */
 
-function editDate(date) {
+function editDate(date){
 
-  const newDate =
-    prompt(
-      "Zadaj nový dátum vo formáte RRRR-MM-DD:",
-      date
-    );
+  const newDate=prompt(
+    "Zadaj nový dátum vo formáte RRRR-MM-DD:",
+    date
+  );
 
+  if(newDate===null)return;
 
-  if (newDate === null) {
-    return;
-  }
+  const cleanDate=newDate.trim();
 
-
-  const cleanDate =
-    newDate.trim();
-
-
-  if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(
-      cleanDate
-    )
-  ) {
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)){
 
     alert(
       "Dátum musí byť vo formáte RRRR-MM-DD."
@@ -1764,19 +1431,9 @@ function editDate(date) {
 
   }
 
+  if(cleanDate===date)return;
 
-  if (
-    cleanDate === date
-  ) {
-
-    return;
-
-  }
-
-
-  if (
-    database[cleanDate]
-  ) {
+  if(database[cleanDate]){
 
     alert(
       "Tento dátum už existuje."
@@ -1786,25 +1443,14 @@ function editDate(date) {
 
   }
 
-
-  database[cleanDate] =
-    database[date];
-
-
+  database[cleanDate]=database[date];
   delete database[date];
 
-
-  save()
-    .then(function() {
-
-      renderDates();
-
-    })
-    .catch(function() {
-
-      renderDates();
-
-    });
+  save().then(function(){
+    renderDates();
+  }).catch(function(){
+    renderDates();
+  });
 
 }
 
@@ -1813,39 +1459,25 @@ function editDate(date) {
    VYMAZAŤ DÁTUM
 ================================================== */
 
-function deleteDate(date) {
+function deleteDate(date){
 
-  const confirmed =
-    confirm(
-      "Naozaj chceš vymazať celý nákupný zoznam pre tento dátum?"
-    );
-
-
-  if (!confirmed) {
-    return;
-  }
-
+  if(!confirm(
+    "Naozaj chceš vymazať celý nákupný zoznam pre tento dátum?"
+  ))return;
 
   delete database[date];
 
-
   save()
-    .then(function() {
+    .then(function(){
 
-      if (
-        currentDate === date
-      ) {
-
+      if(currentDate===date){
         showDates();
-
-      } else {
-
+      }else{
         renderDates();
-
       }
 
     })
-    .catch(function() {
+    .catch(function(){
 
       renderDates();
 
@@ -1858,28 +1490,19 @@ function deleteDate(date) {
    OBCHODY
 ================================================== */
 
-function renderStores() {
+function renderStores(){
 
-  const container =
-    document.getElementById(
-      "stores"
-    );
+  const container=document.getElementById("stores");
 
+  if(!container)return;
 
-  if (!container) {
-    return;
-  }
+  container.innerHTML=
+    STORES.map(function(store){
 
-
-  container.innerHTML =
-    STORES.map(function(store) {
-
-      return `
+      return`
         <button
           class="store-button ${
-            store === currentStore
-              ? "active"
-              : ""
+            store===currentStore ? "active" : ""
           }"
           onclick="selectStore('${escapeHtml(store)}')"
         >
@@ -1889,17 +1512,12 @@ function renderStores() {
 
     }).join("");
 
+  const title=document.getElementById("shopTitle");
 
-  const title =
-    document.getElementById(
-      "shopTitle"
-    );
+  if(title){
 
-
-  if (title) {
-
-    title.textContent =
-      "🛍️ Nákupný zoznam – " +
+    title.textContent=
+      "🛍️ Nákupný zoznam – "+
       currentStore;
 
   }
@@ -1911,43 +1529,21 @@ function renderStores() {
    VYBRAŤ OBCHOD
 ================================================== */
 
-function selectStore(store) {
+function selectStore(store){
 
-  if (
-    !STORES.includes(
-      store
-    )
-  ) {
+  if(!STORES.includes(store))return;
+  if(!currentDate)return;
 
-    return;
-
-  }
-
-
-  if (!currentDate) {
-
-    return;
-
-  }
-
-
-  currentStore =
-    store;
-
+  currentStore=store;
 
   localStorage.setItem(
     "poslednyObchod",
     store
   );
 
-
-  ensureDate(
-    currentDate
-  );
-
+  ensureDate(currentDate);
 
   renderStores();
-
   renderItems();
 
 }
@@ -1957,138 +1553,70 @@ function selectStore(store) {
    PRIDAŤ POLOŽKU
 ================================================== */
 
-function addItem() {
+function addItem(){
 
-  if (!currentDate) {
+  if(!currentDate){
 
-    alert(
-      "Najprv vyber dátum."
-    );
-
+    alert("Najprv vyber dátum.");
     return;
 
   }
 
+  if(!currentStore){
 
-  if (!currentStore) {
-
-    alert(
-      "Najprv vyber obchod."
-    );
-
+    alert("Najprv vyber obchod.");
     return;
 
   }
 
+  ensureDate(currentDate);
 
-  ensureDate(
-    currentDate
+  const nameInput=document.getElementById("itemName");
+  const qtyInput=document.getElementById("itemQty");
+
+  const name=nameInput.value.trim();
+
+  const quantity=Math.max(
+    1,
+    parseInt(qtyInput.value,10) || 1
   );
 
-
-  const nameInput =
-    document.getElementById(
-      "itemName"
-    );
-
-
-  const qtyInput =
-    document.getElementById(
-      "itemQty"
-    );
-
-
-  const name =
-    nameInput.value.trim();
-
-
-  const quantity =
-    Math.max(
-      1,
-      parseInt(
-        qtyInput.value,
-        10
-      ) || 1
-    );
-
-
-  if (!name) {
+  if(!name){
 
     nameInput.focus();
-
     return;
 
   }
 
+  if(!Array.isArray(
+    database[currentDate][currentStore]
+  )){
 
-  /*
-   * TU sa položka ukladá presne pod:
-   *
-   * currentDate
-   * currentStore
-   *
-   * teda napríklad:
-   *
-   * 2026-09-23
-   *   └── Lidl
-   *       └── mlieko
-   */
-
-  if (
-    !Array.isArray(
-      database[currentDate][currentStore]
-    )
-  ) {
-
-    database[currentDate][currentStore] = [];
+    database[currentDate][currentStore]=[];
 
   }
 
+  database[currentDate][currentStore].push({
 
-  database[currentDate][currentStore]
-    .push({
+    id:
+      Date.now()+"-"+
+      Math.random()
+        .toString(36)
+        .substring(2),
 
-      id:
-        Date.now() +
-        "-" +
-        Math.random()
-          .toString(36)
-          .substring(2),
+    name:name,
 
-      name:
-        name,
+    quantity:quantity,
 
-      quantity:
-        quantity,
+    done:false
 
-      done:
-        false
-
-    });
-
-
-  /*
-   * Hneď zobrazíme položku.
-   */
+  });
 
   renderItems();
 
-
-  /*
-   * Vyčistíme formulár.
-   */
-
-  nameInput.value = "";
-
-  qtyInput.value = 1;
-
+  nameInput.value="";
+  qtyInput.value=1;
   nameInput.focus();
-
-
-  /*
-   * A teraz uložíme celý dátum
-   * do Firebase databázy.
-   */
 
   save();
 
@@ -2099,36 +1627,20 @@ function addItem() {
    NÁJSŤ POLOŽKU
 ================================================== */
 
-function findItem(id) {
+function findItem(id){
 
-  if (
-    !currentDate ||
-    !currentStore
-  ) {
+  if(!currentDate || !currentStore)return null;
 
-    return null;
+  ensureDate(currentDate);
 
-  }
-
-
-  ensureDate(
-    currentDate
-  );
-
-
-  const items =
+  const items=
     database[currentDate][currentStore];
 
+  if(!Array.isArray(items))return null;
 
-  if (!Array.isArray(items)) {
-    return null;
-  }
+  return items.find(function(item){
 
-
-  return items.find(function(item) {
-
-    return String(item.id) ===
-      String(id);
+    return String(item.id)===String(id);
 
   });
 
@@ -2136,60 +1648,39 @@ function findItem(id) {
 
 
 /* ==================================================
-   ZMENA MNOŽSTVA
+   MNOŽSTVO
 ================================================== */
 
-function changeQty(
-  id,
-  amount
-) {
+function changeQty(id,amount){
 
-  const item =
-    findItem(id);
+  const item=findItem(id);
 
+  if(!item)return;
 
-  if (!item) {
-    return;
-  }
-
-
-  item.quantity =
-    Math.max(
-      1,
-      Number(
-        item.quantity || 1
-      ) + amount
-    );
-
+  item.quantity=Math.max(
+    1,
+    Number(item.quantity || 1)+amount
+  );
 
   renderItems();
-
   save();
 
 }
 
 
 /* ==================================================
-   KÚPENÉ / NEKÚPENÉ
+   KÚPENÉ
 ================================================== */
 
-function toggleItem(id) {
+function toggleItem(id){
 
-  const item =
-    findItem(id);
+  const item=findItem(id);
 
+  if(!item)return;
 
-  if (!item) {
-    return;
-  }
-
-
-  item.done =
-    !item.done;
-
+  item.done=!item.done;
 
   renderItems();
-
   save();
 
 }
@@ -2199,66 +1690,38 @@ function toggleItem(id) {
    UPRAVIŤ POLOŽKU
 ================================================== */
 
-function editItem(id) {
+function editItem(id){
 
-  const item =
-    findItem(id);
+  const item=findItem(id);
 
+  if(!item)return;
 
-  if (!item) {
-    return;
-  }
+  const name=prompt(
+    "Názov položky:",
+    item.name
+  );
 
+  if(name===null)return;
 
-  const name =
-    prompt(
-      "Názov položky:",
-      item.name
-    );
+  const cleanName=name.trim();
 
+  if(!cleanName)return;
 
-  if (name === null) {
-    return;
-  }
+  const quantity=prompt(
+    "Množstvo:",
+    item.quantity
+  );
 
+  if(quantity===null)return;
 
-  const cleanName =
-    name.trim();
+  item.name=cleanName;
 
-
-  if (!cleanName) {
-    return;
-  }
-
-
-  const quantity =
-    prompt(
-      "Množstvo:",
-      item.quantity
-    );
-
-
-  if (quantity === null) {
-    return;
-  }
-
-
-  item.name =
-    cleanName;
-
-
-  item.quantity =
-    Math.max(
-      1,
-      parseInt(
-        quantity,
-        10
-      ) || 1
-    );
-
+  item.quantity=Math.max(
+    1,
+    parseInt(quantity,10)||1
+  );
 
   renderItems();
-
   save();
 
 }
@@ -2268,35 +1731,21 @@ function editItem(id) {
    VYMAZAŤ POLOŽKU
 ================================================== */
 
-function deleteItem(id) {
+function deleteItem(id){
 
-  if (
-    !currentDate ||
-    !currentStore
-  ) {
+  if(!currentDate || !currentStore)return;
 
-    return;
+  ensureDate(currentDate);
 
-  }
-
-
-  ensureDate(
-    currentDate
-  );
-
-
-  database[currentDate][currentStore] =
+  database[currentDate][currentStore]=
     database[currentDate][currentStore]
-      .filter(function(item) {
+      .filter(function(item){
 
-        return String(item.id) !==
-          String(id);
+        return String(item.id)!==String(id);
 
       });
 
-
   renderItems();
-
   save();
 
 }
@@ -2306,34 +1755,21 @@ function deleteItem(id) {
    VYMAZAŤ KÚPENÉ
 ================================================== */
 
-function clearBought() {
+function clearBought(){
 
-  if (
-    !currentDate ||
-    !currentStore
-  ) {
+  if(!currentDate || !currentStore)return;
 
-    return;
+  ensureDate(currentDate);
 
-  }
-
-
-  ensureDate(
-    currentDate
-  );
-
-
-  database[currentDate][currentStore] =
+  database[currentDate][currentStore]=
     database[currentDate][currentStore]
-      .filter(function(item) {
+      .filter(function(item){
 
-        return item.done !== true;
+        return item.done!==true;
 
       });
 
-
   renderItems();
-
   save();
 
 }
@@ -2343,109 +1779,66 @@ function clearBought() {
    VYKRESLIŤ POLOŽKY
 ================================================== */
 
-function renderItems() {
+function renderItems(){
 
-  const container =
-    document.getElementById(
-      "itemList"
-    );
+  const container=document.getElementById("itemList");
 
+  if(!container)return;
 
-  if (!container) {
-    return;
-  }
+  if(!currentDate || !currentStore){
 
-
-  if (
-    !currentDate ||
-    !currentStore
-  ) {
-
-    container.innerHTML = "";
-
+    container.innerHTML="";
     return;
 
   }
 
+  ensureDate(currentDate);
 
-  ensureDate(
-    currentDate
-  );
-
-
-  const items =
+  const items=
     database[currentDate][currentStore];
 
+  if(!Array.isArray(items) || !items.length){
 
-  if (
-    !Array.isArray(items) ||
-    items.length === 0
-  ) {
-
-    container.innerHTML = `
+    container.innerHTML=`
       <div class="empty">
-        V tomto obchode zatiaľ
-        nemáš žiadne položky.
+        V tomto obchode zatiaľ nemáš žiadne položky.
       </div>
     `;
 
-  } else {
+  }else{
 
-    container.innerHTML =
-      items.map(function(item) {
+    container.innerHTML=
+      items.map(function(item){
 
-        const id =
-          escapeHtml(
-            String(item.id)
-          );
+        const id=escapeHtml(String(item.id));
 
-
-        return `
-          <div
-            class="item ${
-              item.done
-                ? "done"
-                : ""
-            }"
-          >
+        return`
+          <div class="item ${item.done?"done":""}">
 
             <input
               class="item-checkbox"
               type="checkbox"
-              ${
-                item.done
-                  ? "checked"
-                  : ""
-              }
+              ${item.done?"checked":""}
               onchange="toggleItem('${id}')"
             >
-
 
             <span class="item-name">
               ${escapeHtml(item.name)}
             </span>
 
-
             <div class="quantity">
 
-              <button
-                onclick="changeQty('${id}', -1)"
-              >
+              <button onclick="changeQty('${id}',-1)">
                 −
               </button>
 
-              <b>
-                ${Number(item.quantity) || 1}
-              </b>
+              <b>${Number(item.quantity)||1}</b>
 
-              <button
-                onclick="changeQty('${id}', 1)"
-              >
+              <button onclick="changeQty('${id}',1)">
                 +
               </button>
 
             </div>
-
 
             <button
               class="item-edit"
@@ -2453,7 +1846,6 @@ function renderItems() {
             >
               ✏️
             </button>
-
 
             <button
               class="item-delete"
@@ -2469,32 +1861,58 @@ function renderItems() {
 
   }
 
+  const count=items.length;
 
-  const count =
-    items.length;
+  const bought=items.filter(function(item){
+    return item.done===true;
+  }).length;
+
+  const counter=document.getElementById("itemCount");
+
+  if(counter){
+
+    counter.textContent=
+      count+
+      " položiek • "+
+      bought+
+      " kúpených";
+
+  }
+
+}
 
 
-  const bought =
-    items.filter(function(item) {
+/* ==================================================
+   ZDIEĽANIE – DÁTUM / DLHODOBO
+================================================== */
 
-      return item.done === true;
+function normalizeEmail(email){
 
-    }).length;
+  return String(email || "")
+    .trim()
+    .toLowerCase();
+
+}
 
 
-  const counter =
+function updateShareDateVisibility(){
+
+  const longTerm=
     document.getElementById(
-      "itemCount"
+      "shareLongTerm"
+    ).checked;
+
+  const box=
+    document.getElementById(
+      "shareDateBox"
     );
 
+  if(box){
 
-  if (counter) {
-
-    counter.textContent =
-      count +
-      " položiek • " +
-      bought +
-      " kúpených";
+    box.classList.toggle(
+      "hidden",
+      longTerm
+    );
 
   }
 
@@ -2505,117 +1923,196 @@ function renderItems() {
    ZDIEĽANIE
 ================================================== */
 
-function normalizeEmail(email) {
+function shareList(){
 
-  return String(email || "")
-    .trim()
-    .toLowerCase();
+  if(!currentFirebaseUser){
 
-}
-
-
-function shareList() {
-
-  if (!currentFirebaseUser) {
-
+    alert("Nie si prihlásený.");
     return;
 
   }
 
+  const input=document.getElementById("shareEmail");
+  const status=document.getElementById("shareStatus");
+  const dateInput=document.getElementById("shareDate");
+  const longTerm=document.getElementById("shareLongTerm").checked;
 
-  const input =
-    document.getElementById(
-      "shareEmail"
-    );
+  const email=normalizeEmail(input.value);
 
+  if(!email){
 
-  const status =
-    document.getElementById(
-      "shareStatus"
-    );
-
-
-  const email =
-    normalizeEmail(
-      input.value
-    );
-
-
-  if (!email) {
-
-    status.textContent =
-      "Zadaj e-mail.";
-
+    status.textContent="❌ Zadaj e-mail.";
     input.focus();
+    return;
+
+  }
+
+  if(email===normalizeEmail(currentFirebaseUser.email)){
+
+    status.textContent=
+      "❌ Svoj zoznam nemôžeš zdieľať sám so sebou.";
 
     return;
 
   }
 
+  let date=null;
 
-  if (
-    email ===
-    normalizeEmail(
-      currentFirebaseUser.email
-    )
-  ) {
+  if(!longTerm){
 
-    status.textContent =
-      "Svoj zoznam nemôžeš zdieľať sám so sebou.";
+    date=dateInput.value;
 
-    return;
+    if(!date){
+
+      status.textContent=
+        "❌ Vyber dátum alebo zapni dlhodobé zdieľanie.";
+
+      return;
+
+    }
+
+    if(!database[date]){
+
+      status.textContent=
+        "❌ Tento dátum ešte nemáš vytvorený.";
+
+      return;
+
+    }
 
   }
 
-
-  const key =
-    encodeURIComponent(
-      email
-    );
-
+  status.textContent=
+    "⏳ Hľadám používateľa...";
 
   firebaseDatabase
     .ref(
-      "sharedLists/" +
-      currentFirebaseUser.uid +
-      "/" +
-      key
+      "publicUsers/" +
+      emailKey(email)
     )
-    .set({
+    .once("value")
+    .then(function(snapshot){
 
-      ownerUid:
-        currentFirebaseUser.uid,
+      const user=snapshot.val();
 
-      ownerEmail:
-        currentFirebaseUser.email || "",
+      if(!user || !user.uid){
 
-      sharedEmail:
-        email,
+        throw new Error(
+          "Používateľ s týmto e-mailom sa ešte v aplikácii neprihlásil."
+        );
 
-      createdAt:
-        firebase.database.ServerValue.TIMESTAMP
+      }
+
+      const shareId=
+        currentFirebaseUser.uid+
+        "_" +
+        user.uid;
+
+      const shareData={
+
+        ownerUid:
+          currentFirebaseUser.uid,
+
+        ownerEmail:
+          normalizeEmail(
+            currentFirebaseUser.email
+          ),
+
+        recipientUid:
+          user.uid,
+
+        recipientEmail:
+          email,
+
+        longTerm:
+          longTerm,
+
+        date:
+          date || null,
+
+        active:true,
+
+        createdAt:
+          firebase.database.ServerValue.TIMESTAMP
+
+      };
+
+      const updates={};
+
+      updates[
+        "sharedLists/" +
+        currentFirebaseUser.uid +
+        "/" +
+        shareId
+      ]=shareData;
+
+      updates[
+        "sharedData/" +
+        user.uid +
+        "/" +
+        shareId
+      ]={
+        ownerUid:
+          currentFirebaseUser.uid,
+
+        ownerEmail:
+          normalizeEmail(
+            currentFirebaseUser.email
+          ),
+
+        recipientUid:
+          user.uid,
+
+        recipientEmail:
+          email,
+
+        longTerm:
+          longTerm,
+
+        date:
+          date || null,
+
+        active:true,
+
+        data:
+          longTerm
+            ? database
+            : {
+                [date]:
+                  database[date]
+              },
+
+        updatedAt:
+          firebase.database.ServerValue.TIMESTAMP
+
+      };
+
+      return firebaseDatabase
+        .ref()
+        .update(updates);
 
     })
-    .then(function() {
+    .then(function(){
 
-      status.textContent =
-        "✅ Zoznam bol zdieľaný s " +
-        email;
+      status.textContent=
+        "✅ Zoznam bol zdieľaný s "+
+        email+".";
 
-      input.value = "";
+      input.value="";
 
       loadSharing();
+      loadIncomingSharedLists();
 
     })
-    .catch(function(error) {
+    .catch(function(error){
 
       console.error(
         "Zdieľanie:",
         error
       );
 
-      status.textContent =
-        "❌ Zdieľanie sa nepodarilo.";
+      status.textContent=
+        "❌ "+error.message;
 
     });
 
@@ -2623,26 +2120,106 @@ function shareList() {
 
 
 /* ==================================================
-   NAČÍTAŤ ZDIEĽANIE
+   AKTUALIZOVAŤ VŠETKY ZDIEĽANIA
 ================================================== */
 
-function loadSharing() {
+function syncAllShares(){
 
-  if (!currentFirebaseUser) {
-    return;
+  if(!currentFirebaseUser){
+
+    return Promise.resolve();
+
   }
 
+  return firebaseDatabase
+    .ref(
+      "sharedLists/" +
+      currentFirebaseUser.uid
+    )
+    .once("value")
+    .then(function(snapshot){
 
-  const container =
+      const shares=snapshot.val() || {};
+      const updates={};
+
+      Object.keys(shares).forEach(function(shareId){
+
+        const share=shares[shareId];
+
+        if(!share || !share.active)return;
+
+        let sharedData;
+
+        if(share.longTerm){
+
+          sharedData=database;
+
+        }else{
+
+          if(!share.date ||
+             !database[share.date]){
+
+            sharedData={};
+
+          }else{
+
+            sharedData={
+              [share.date]:
+                database[share.date]
+            };
+
+          }
+
+        }
+
+        updates[
+          "sharedData/" +
+          share.recipientUid +
+          "/" +
+          shareId +
+          "/data"
+        ]=sharedData;
+
+        updates[
+          "sharedData/" +
+          share.recipientUid +
+          "/" +
+          shareId +
+          "/updatedAt"
+        ]=
+          firebase.database.ServerValue.TIMESTAMP;
+
+      });
+
+      if(!Object.keys(updates).length){
+
+        return null;
+
+      }
+
+      return firebaseDatabase
+        .ref()
+        .update(updates);
+
+    });
+
+}
+
+
+/* ==================================================
+   MOJE ZDIEĽANIA
+================================================== */
+
+function loadSharing(){
+
+  if(!currentFirebaseUser)return;
+
+  const container=
     document.getElementById(
       "sharedUsers"
     );
 
-
-  if (!container) {
-    return;
-  }
-
+  if(!container)return;
 
   firebaseDatabase
     .ref(
@@ -2650,45 +2227,57 @@ function loadSharing() {
       currentFirebaseUser.uid
     )
     .once("value")
-    .then(function(snapshot) {
+    .then(function(snapshot){
 
-      const data =
-        snapshot.val() || {};
+      const data=snapshot.val() || {};
 
+      const shares=
+        Object.values(data)
+          .filter(function(share){
+            return share && share.active;
+          });
 
-      const users =
-        Object.values(data);
+      if(!shares.length){
 
-
-      if (!users.length) {
-
-        container.innerHTML = "";
+        container.innerHTML=
+          '<div class="empty">Zatiaľ nič nezdieľaš.</div>';
 
         return;
 
       }
 
+      container.innerHTML=
+        shares.map(function(share){
 
-      container.innerHTML =
-        users.map(function(user) {
+          const scope=
+            share.longTerm
+              ? "♾️ Dlhodobo"
+              : "📅 "+
+                formatDate(share.date);
 
-          return `
+          return`
             <div class="shared-user">
 
-              <span>
-                👤
-                ${escapeHtml(
-                  user.sharedEmail
-                )}
-              </span>
+              <div>
+                <b>👤 ${escapeHtml(
+                  share.recipientEmail
+                )}</b>
+
+                <div style="color:#777;font-size:12px">
+                  ${escapeHtml(scope)}
+                </div>
+              </div>
 
               <button
                 class="danger"
-                onclick="removeSharedUser('${escapeHtml(
-                  user.sharedEmail
-                )}')"
+                onclick="removeSharedUser(
+                  '${escapeHtml(share.recipientUid)}',
+                  '${escapeHtml(
+                    share.ownerUid+"_"+share.recipientUid
+                  )}'
+                )"
               >
-                Zrušiť
+                ✕
               </button>
 
             </div>
@@ -2697,10 +2286,10 @@ function loadSharing() {
         }).join("");
 
     })
-    .catch(function(error) {
+    .catch(function(error){
 
       console.error(
-        "Zdieľanie:",
+        "Načítanie zdieľania:",
         error
       );
 
@@ -2713,36 +2302,291 @@ function loadSharing() {
    ZRUŠIŤ ZDIEĽANIE
 ================================================== */
 
-function removeSharedUser(email) {
+function removeSharedUser(recipientUid,shareId){
 
-  if (!currentFirebaseUser) {
-    return;
-  }
+  if(!currentFirebaseUser)return;
 
+  if(!confirm(
+    "Naozaj chceš zrušiť toto zdieľanie?"
+  ))return;
 
-  const key =
-    encodeURIComponent(
-      normalizeEmail(email)
-    );
+  const updates={};
 
+  updates[
+    "sharedLists/" +
+    currentFirebaseUser.uid +
+    "/" +
+    shareId
+  ]=null;
+
+  updates[
+    "sharedData/" +
+    recipientUid +
+    "/" +
+    shareId
+  ]=null;
 
   firebaseDatabase
-    .ref(
-      "sharedLists/" +
-      currentFirebaseUser.uid +
-      "/" +
-      key
-    )
-    .remove()
-    .then(function() {
+    .ref()
+    .update(updates)
+    .then(function(){
 
       loadSharing();
 
     })
-    .catch(function(error) {
+    .catch(function(error){
 
       console.error(
         "Zrušenie zdieľania:",
+        error
+      );
+
+      alert(
+        "Zdieľanie sa nepodarilo zrušiť."
+      );
+
+    });
+
+}
+
+
+/* ==================================================
+   ZDIEĽANÉ SO MNOU
+================================================== */
+
+function loadIncomingSharedLists(){
+
+  if(!currentFirebaseUser)return;
+
+  const container=
+    document.getElementById(
+      "incomingSharedLists"
+    );
+
+  if(!container)return;
+
+  firebaseDatabase
+    .ref(
+      "sharedData/" +
+      currentFirebaseUser.uid
+    )
+    .once("value")
+    .then(function(snapshot){
+
+      const data=snapshot.val() || {};
+
+      const shares=
+        Object.keys(data)
+          .map(function(key){
+
+            return{
+              id:key,
+              share:data[key]
+            };
+
+          })
+          .filter(function(entry){
+
+            return entry.share &&
+                   entry.share.active;
+
+          });
+
+      if(!shares.length){
+
+        container.innerHTML=
+          '<div class="empty">Nikto s tebou zatiaľ nezdieľa zoznam.</div>';
+
+        return;
+
+      }
+
+      container.innerHTML=
+        shares.map(function(entry){
+
+          return renderIncomingShare(
+            entry.id,
+            entry.share
+          );
+
+        }).join("");
+
+    })
+    .catch(function(error){
+
+      console.error(
+        "Zdieľané zoznamy:",
+        error
+      );
+
+    });
+
+}
+
+
+/* ==================================================
+   VYKRESLIŤ ZDIEĽANÝ ZOZNAM
+================================================== */
+
+function renderIncomingShare(shareId,share){
+
+  const sharedData=
+    share.data || {};
+
+  const dates=
+    Object.keys(sharedData)
+      .sort()
+      .reverse();
+
+  let html="";
+
+  if(!dates.length){
+
+    html=`
+      <div class="shared-date-card">
+        <b>👤 ${escapeHtml(
+          share.ownerEmail
+        )}</b>
+
+        <div class="empty">
+          Zoznam je zatiaľ prázdny.
+        </div>
+
+        <button
+          class="danger"
+          onclick="removeIncomingShare('${escapeHtml(shareId)}')"
+        >
+          ✕ Odstrániť zo zdieľaných
+        </button>
+      </div>
+    `;
+
+    return html;
+
+  }
+
+  html=dates.map(function(date){
+
+    const dateData=sharedData[date] || {};
+
+    let shops="";
+
+    STORES.forEach(function(store){
+
+      const items=
+        Array.isArray(dateData[store])
+          ? dateData[store]
+          : [];
+
+      if(!items.length)return;
+
+      shops+=`
+        <div class="shared-shop">
+
+          <b>🏪 ${escapeHtml(store)}</b>
+
+          ${
+            items.map(function(item){
+
+              return`
+                <div
+                  class="shared-item ${
+                    item.done ? "done" : ""
+                  }"
+                >
+                  <span>
+                    ${escapeHtml(item.name)}
+                  </span>
+
+                  <span>
+                    × ${Number(item.quantity)||1}
+                  </span>
+                </div>
+              `;
+
+            }).join("")
+          }
+
+        </div>
+      `;
+
+    });
+
+    return`
+      <div class="shared-date-card">
+
+        <div class="shared-date-header">
+
+          <div>
+            <b>📅 ${escapeHtml(
+              formatDate(date)
+            )}</b>
+
+            <div class="shared-owner">
+              👤 ${escapeHtml(
+                share.ownerEmail
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        ${
+          shops ||
+          '<div class="empty">Žiadne položky.</div>'
+        }
+
+      </div>
+    `;
+
+  }).join("");
+
+  return`
+    <div>
+      ${html}
+
+      <button
+        class="danger"
+        style="margin-top:8px;width:100%"
+        onclick="removeIncomingShare('${escapeHtml(shareId)}')"
+      >
+        ✕ Odstrániť toto zdieľanie
+      </button>
+    </div>
+  `;
+
+}
+
+
+/* ==================================================
+   ODSTRÁNIŤ PRIJATÉ ZDIEĽANIE
+================================================== */
+
+function removeIncomingShare(shareId){
+
+  if(!currentFirebaseUser)return;
+
+  if(!confirm(
+    "Odstrániť tento zdieľaný zoznam?"
+  ))return;
+
+  firebaseDatabase
+    .ref(
+      "sharedData/" +
+      currentFirebaseUser.uid +
+      "/" +
+      shareId
+    )
+    .remove()
+    .then(function(){
+
+      loadIncomingSharedLists();
+
+    })
+    .catch(function(error){
+
+      console.error(
+        "Odstránenie prijatého zdieľania:",
         error
       );
 
@@ -2755,639 +2599,51 @@ function removeSharedUser(email) {
    MAPA
 ================================================== */
 
-function createMap() {
+function createMap(){
 
-  if (
-    typeof L === "undefined"
-  ) {
+  if(typeof L==="undefined"){
 
     document.getElementById(
       "mapStatus"
-    ).textContent =
+    ).textContent=
       "❌ Mapu sa nepodarilo načítať.";
 
     return;
 
   }
 
+  if(map)return;
 
-  if (map) {
-    return;
-  }
-
-
-  map =
-    L.map(
-      "map"
-    ).setView(
-      [49.220,18.560],
-      14
-    );
-
+  map=L.map("map").setView(
+    [49.220,18.560],
+    14
+  );
 
   L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
-      maxZoom: 19,
-
+      maxZoom:19,
       attribution:
         "&copy; OpenStreetMap contributors"
     }
   ).addTo(map);
 
-
   renderStoresOnMap();
-
 
   document.getElementById(
     "mapStatus"
-  ).textContent =
+  ).textContent=
     "🟢 Mapa je pripravená.";
 
-
-  setTimeout(function() {
+  setTimeout(function(){
 
     map.invalidateSize();
 
-  }, 300);
+  },300);
 
 }
 
 
 /* ==================================================
-   OTVORENÉ / ZATVORENÉ
+   ČAS
 ================================================== */
-
-function getStoreStatus(store) {
-
-  const now =
-    new Date();
-
-
-  const day =
-    now.getDay();
-
-
-  const hours =
-    store.hours
-      ? store.hours[day]
-      : null;
-
-
-  if (!hours) {
-
-    return {
-      open: false,
-      text: "🔴 Zatvorené"
-    };
-
-  }
-
-
-  const current =
-    now.getHours() * 60 +
-    now.getMinutes();
-
-
-  const opening =
-    parseTime(
-      hours[0]
-    );
-
-
-  const closing =
-    parseTime(
-      hours[1]
-    );
-
-
-  if (
-    current >= opening &&
-    current < closing
-  ) {
-
-    return {
-      open: true,
-      text:
-        "🟢 Otvorené do " +
-        hours[1]
-    };
-
-  }
-
-
-  return {
-    open: false,
-    text: "🔴 Zatvorené"
-  };
-
-}
-
-
-function parseTime(time) {
-
-  const parts =
-    time.split(":");
-
-
-  return (
-    Number(parts[0]) * 60 +
-    Number(parts[1])
-  );
-
-}
-
-
-/* ==================================================
-   OTVÁRACIE HODINY
-================================================== */
-
-function getHoursHtml(store) {
-
-  const days = [
-    "Ne",
-    "Po",
-    "Ut",
-    "St",
-    "Št",
-    "Pi",
-    "So"
-  ];
-
-
-  if (!store.hours) {
-    return "";
-  }
-
-
-  return days.map(function(day, index) {
-
-    const hours =
-      store.hours[index];
-
-
-    if (!hours) {
-
-      return `
-        <div>
-          <b>${day}:</b>
-          zatvorené
-        </div>
-      `;
-
-    }
-
-
-    return `
-      <div>
-        <b>${day}:</b>
-        ${hours[0]} – ${hours[1]}
-      </div>
-    `;
-
-  }).join("");
-
-}
-
-
-/* ==================================================
-   OBCHODY NA MAPE
-================================================== */
-
-function renderStoresOnMap() {
-
-  if (!map) {
-    return;
-  }
-
-
-  storeMarkers.forEach(function(marker) {
-
-    map.removeLayer(marker);
-
-  });
-
-
-  storeMarkers = [];
-
-
-  Object.keys(STORE_DATA)
-    .forEach(function(storeName) {
-
-      STORE_DATA[storeName]
-        .forEach(function(store) {
-
-          const status =
-            getStoreStatus(store);
-
-
-          const icon =
-            L.divIcon({
-
-              className: "",
-
-              html: `
-                <div class="shop-icon">
-
-                  <img
-                    src="${store.logo}"
-                    alt=""
-                    onerror="
-                      this.style.display='none'
-                    "
-                  >
-
-                </div>
-              `,
-
-              iconSize: [
-                44,
-                44
-              ],
-
-              iconAnchor: [
-                22,
-                22
-              ]
-
-            });
-
-
-          const marker =
-            L.marker(
-              [
-                store.lat,
-                store.lng
-              ],
-              {
-                icon: icon
-              }
-            )
-            .addTo(map);
-
-
-          marker.bindPopup(`
-
-            <div class="store-popup">
-
-              <img
-                src="${store.logo}"
-                alt=""
-              >
-
-              <h3>
-                ${escapeHtml(
-                  store.name
-                )}
-              </h3>
-
-              <p>
-                📍
-                ${escapeHtml(
-                  store.address
-                )}
-              </p>
-
-              <p>
-                ${status.text}
-              </p>
-
-              <div class="hours">
-
-                <b>
-                  Otváracie hodiny
-                </b>
-
-                ${getHoursHtml(store)}
-
-              </div>
-
-              <button
-                class="primary"
-                onclick="
-                  selectStoreFromMap(
-                    '${escapeHtml(storeName)}'
-                  )
-                "
-              >
-                🛒 Nakupovať tu
-              </button>
-
-              <button
-                class="secondary"
-                onclick="
-                  navigateTo(
-                    ${store.lat},
-                    ${store.lng}
-                  )
-                "
-              >
-                🧭 Navigovať
-              </button>
-
-            </div>
-
-          `);
-
-
-          storeMarkers.push(
-            marker
-          );
-
-        });
-
-    });
-
-}
-
-
-/* ==================================================
-   OBCHOD Z MAPY
-================================================== */
-
-function selectStoreFromMap(store) {
-
-  if (
-    !STORES.includes(
-      store
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  /*
-   * Ak nie je vybraný dátum,
-   * použijeme dnešný dátum.
-   */
-
-  if (!currentDate) {
-
-    currentDate =
-      getLocalDateString();
-
-    ensureDate(
-      currentDate
-    );
-
-  }
-
-
-  currentStore =
-    store;
-
-
-  localStorage.setItem(
-    "poslednyObchod",
-    store
-  );
-
-
-  openShoppingPage();
-
-}
-
-
-/* ==================================================
-   NAVIGÁCIA
-================================================== */
-
-function navigateTo(
-  lat,
-  lng
-) {
-
-  const url =
-    "https://www.google.com/maps/dir/?api=1&destination=" +
-    encodeURIComponent(
-      lat + "," + lng
-    );
-
-
-  window.open(
-    url,
-    "_blank"
-  );
-
-}
-
-
-/* ==================================================
-   MOJA POLOHA
-================================================== */
-
-function mojaPoloha() {
-
-  const status =
-    document.getElementById(
-      "mapStatus"
-    );
-
-
-  if (
-    !navigator.geolocation
-  ) {
-
-    status.textContent =
-      "❌ Tvoj prehliadač nepodporuje určovanie polohy.";
-
-    return;
-
-  }
-
-
-  status.textContent =
-    "📍 Získavam tvoju polohu...";
-
-
-  navigator.geolocation.getCurrentPosition(
-
-    function(position) {
-
-      const lat =
-        position.coords.latitude;
-
-      const lng =
-        position.coords.longitude;
-
-
-      if (userMarker) {
-
-        map.removeLayer(
-          userMarker
-        );
-
-      }
-
-
-      userMarker =
-        L.marker(
-          [
-            lat,
-            lng
-          ]
-        )
-        .addTo(map)
-        .bindPopup(
-          "📍 Tvoja poloha"
-        )
-        .openPopup();
-
-
-      map.setView(
-        [
-          lat,
-          lng
-        ],
-        15
-      );
-
-
-      status.textContent =
-        "📍 Tvoja poloha bola nájdená.";
-
-    },
-
-    function(error) {
-
-      console.error(
-        "Geolocation:",
-        error
-      );
-
-
-      status.textContent =
-        "❌ Tvoju polohu sa nepodarilo získať.";
-
-    },
-
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 60000
-    }
-
-  );
-
-}
-
-
-/* ==================================================
-   ENTER V POLOŽKE
-================================================== */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  function() {
-
-    const itemName =
-      document.getElementById(
-        "itemName"
-      );
-
-
-    const itemQty =
-      document.getElementById(
-        "itemQty"
-      );
-
-
-    if (itemName) {
-
-      itemName.addEventListener(
-        "keydown",
-        function(event) {
-
-          if (
-            event.key === "Enter"
-          ) {
-
-            event.preventDefault();
-
-            addItem();
-
-          }
-
-        }
-      );
-
-    }
-
-
-    if (itemQty) {
-
-      itemQty.addEventListener(
-        "keydown",
-        function(event) {
-
-          if (
-            event.key === "Enter"
-          ) {
-
-            event.preventDefault();
-
-            addItem();
-
-          }
-
-        }
-      );
-
-    }
-
-
-    /*
-     * Predvolene dnešný dátum.
-     */
-
-    const dateInput =
-      document.getElementById(
-        "newDate"
-      );
-
-
-    if (dateInput) {
-
-      dateInput.value =
-        getLocalDateString();
-
-    }
-
-
-    /*
-     * Zobrazíme dátumy.
-     */
-
-    renderDates();
-
-
-    /*
-     * Spustíme mapu.
-     */
-
-    createMap();
-
-
-    /*
-     * Aktualizácia otváracích hodín
-     * každú minútu.
-     */
-
-    setInterval(
-      function() {
-
-        renderStoresOnMap();
-
-      },
-      60000
-    );
-
-  }
-);
-
-</script>
-
-</body>
-</html>
