@@ -719,7 +719,7 @@ const STORE_DATA={
       lat:49.222110,
       lng:18.566888,
       address:"Hlavná 2025/7, 014 01 Bytča",
-      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIuwFw2691OFu2tnBQLkZoPMRo12gnJ3FZa5H_jAApvw&s=10",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIuwFw2691OFu2tnBQLkZoPmRO12gnJ3FZa5H_jAApvw&s=10",
       hours:{
         1:["07:00","21:00"],
         2:["07:00","21:00"],
@@ -805,6 +805,23 @@ const STORE_DATA={
         5:["06:00","19:00"],
         6:["06:00","13:00"],
         0:["06:00","12:00"]
+      }
+    },
+
+    {
+      name:"COOP Jednota Tempo Bytča",
+      lat:49.2256175,
+      lng:18.5592794,
+      address:"Hlinkova 1120, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
+      hours:{
+        1:["06:00","20:00"],
+        2:["06:00","20:00"],
+        3:["06:00","20:00"],
+        4:["06:00","20:00"],
+        5:["06:00","20:00"],
+        6:["06:00","20:00"],
+        0:["08:00","17:00"]
       }
     }
 
@@ -940,9 +957,9 @@ auth.onAuthStateChanged(function(user){
   }
 
   registerPublicUser();
-  loadFirebaseData();
-  loadSharing();
-  loadIncomingSharedLists();
+  listenFirebaseData();
+  listenSharing();
+  listenIncomingSharedLists();
 
 });
 
@@ -1080,10 +1097,10 @@ function save(){
 
 
 /* ==================================================
-   NAČÍTANIE VLASTNÝCH DÁT
+   NAČÍTANIE A REALTIME SLUCHAČ VLASTNÝCH DÁT
 ================================================== */
 
-function loadFirebaseData(){
+function listenFirebaseData(){
 
   if(!currentFirebaseUser)return;
 
@@ -1093,8 +1110,7 @@ function loadFirebaseData(){
       currentFirebaseUser.uid +
       "/shoppingData"
     )
-    .once("value")
-    .then(function(snapshot){
+    .on("value", function(snapshot){
 
       const data=snapshot.val();
 
@@ -1122,9 +1138,11 @@ function loadFirebaseData(){
       }
 
       renderDates();
+      if(!document.getElementById("shoppingPage").classList.contains("hidden")){
+        renderItems();
+      }
 
-    })
-    .catch(function(error){
+    }, function(error){
 
       console.error(
         "Firebase načítanie:",
@@ -1687,6 +1705,24 @@ function toggleItem(id){
 
 
 /* ==================================================
+   KÚPENÉ
+================================================== */
+
+function toggleItem(id){
+
+  const item=findItem(id);
+
+  if(!item)return;
+
+  item.done=!item.done;
+
+  renderItems();
+  save();
+
+}
+
+
+/* ==================================================
    UPRAVIŤ POLOŽKU
 ================================================== */
 
@@ -2100,9 +2136,6 @@ function shareList(){
 
       input.value="";
 
-      loadSharing();
-      loadIncomingSharedLists();
-
     })
     .catch(function(error){
 
@@ -2207,10 +2240,10 @@ function syncAllShares(){
 
 
 /* ==================================================
-   MOJE ZDIEĽANIA
+   MOJE ZDIEĽANIA (REALTIME LISTEN)
 ================================================== */
 
-function loadSharing(){
+function listenSharing(){
 
   if(!currentFirebaseUser)return;
 
@@ -2226,8 +2259,7 @@ function loadSharing(){
       "sharedLists/" +
       currentFirebaseUser.uid
     )
-    .once("value")
-    .then(function(snapshot){
+    .on("value", function(snapshot){
 
       const data=snapshot.val() || {};
 
@@ -2285,8 +2317,7 @@ function loadSharing(){
 
         }).join("");
 
-    })
-    .catch(function(error){
+    }, function(error){
 
       console.error(
         "Načítanie zdieľania:",
@@ -2329,11 +2360,6 @@ function removeSharedUser(recipientUid,shareId){
   firebaseDatabase
     .ref()
     .update(updates)
-    .then(function(){
-
-      loadSharing();
-
-    })
     .catch(function(error){
 
       console.error(
@@ -2351,10 +2377,10 @@ function removeSharedUser(recipientUid,shareId){
 
 
 /* ==================================================
-   ZDIEĽANÉ SO MNOU
+   ZDIEĽANÉ SO MNOU (REALTIME LISTEN)
 ================================================== */
 
-function loadIncomingSharedLists(){
+function listenIncomingSharedLists(){
 
   if(!currentFirebaseUser)return;
 
@@ -2370,8 +2396,7 @@ function loadIncomingSharedLists(){
       "sharedData/" +
       currentFirebaseUser.uid
     )
-    .once("value")
-    .then(function(snapshot){
+    .on("value", function(snapshot){
 
       const data=snapshot.val() || {};
 
@@ -2411,8 +2436,7 @@ function loadIncomingSharedLists(){
 
         }).join("");
 
-    })
-    .catch(function(error){
+    }, function(error){
 
       console.error(
         "Zdieľané zoznamy:",
@@ -2425,7 +2449,7 @@ function loadIncomingSharedLists(){
 
 
 /* ==================================================
-   VYKRESLIŤ ZDIEĽANÝ ZOZNAM
+   VYKRESLIŤ ZDIEĽANÝ ZOZNAM (IBA NEODŠKRTNUTÉ POLOŽKY)
 ================================================== */
 
 function renderIncomingShare(shareId,share){
@@ -2438,11 +2462,9 @@ function renderIncomingShare(shareId,share){
       .sort()
       .reverse();
 
-  let html="";
-
   if(!dates.length){
 
-    html=`
+    return `
       <div class="shared-date-card">
         <b>👤 ${escapeHtml(
           share.ownerEmail
@@ -2454,6 +2476,7 @@ function renderIncomingShare(shareId,share){
 
         <button
           class="danger"
+          style="margin-top:8px;width:100%"
           onclick="removeIncomingShare('${escapeHtml(shareId)}')"
         >
           ✕ Odstrániť zo zdieľaných
@@ -2461,11 +2484,11 @@ function renderIncomingShare(shareId,share){
       </div>
     `;
 
-    return html;
-
   }
 
-  html=dates.map(function(date){
+  let visibleDatesHtml="";
+
+  dates.forEach(function(date){
 
     const dateData=sharedData[date] || {};
 
@@ -2478,7 +2501,12 @@ function renderIncomingShare(shareId,share){
           ? dateData[store]
           : [];
 
-      if(!items.length)return;
+      // FILTRUJEME LEN NEODŠKRTNUTÉ POLOŽKY
+      const activeItems = items.filter(function(item){
+        return item && !item.done;
+      });
+
+      if(!activeItems.length)return;
 
       shops+=`
         <div class="shared-shop">
@@ -2486,14 +2514,10 @@ function renderIncomingShare(shareId,share){
           <b>🏪 ${escapeHtml(store)}</b>
 
           ${
-            items.map(function(item){
+            activeItems.map(function(item){
 
               return`
-                <div
-                  class="shared-item ${
-                    item.done ? "done" : ""
-                  }"
-                >
+                <div class="shared-item">
                   <span>
                     ${escapeHtml(item.name)}
                   </span>
@@ -2512,38 +2536,58 @@ function renderIncomingShare(shareId,share){
 
     });
 
-    return`
-      <div class="shared-date-card">
+    // Ak pre daný dátum existujú nejaké neodškrtnuté obchody/položky, vygenerujeme ho
+    if(shops !== ""){
 
-        <div class="shared-date-header">
+      visibleDatesHtml+=`
+        <div class="shared-date-card">
 
-          <div>
-            <b>📅 ${escapeHtml(
-              formatDate(date)
-            )}</b>
+          <div class="shared-date-header">
 
-            <div class="shared-owner">
-              👤 ${escapeHtml(
-                share.ownerEmail
-              )}
+            <div>
+              <b>📅 ${escapeHtml(
+                formatDate(date)
+              )}</b>
+
+              <div class="shared-owner">
+                👤 ${escapeHtml(
+                  share.ownerEmail
+                )}
+              </div>
             </div>
+
           </div>
 
+          ${shops}
+
         </div>
+      `;
 
-        ${
-          shops ||
-          '<div class="empty">Žiadne položky.</div>'
-        }
+    }
 
+  });
+
+  if(!visibleDatesHtml){
+
+    return `
+      <div class="shared-date-card">
+        <b>👤 ${escapeHtml(share.ownerEmail)}</b>
+        <div class="empty">Všetky položky sú odškrtnuté (kúpené).</div>
+        <button
+          class="danger"
+          style="margin-top:8px;width:100%"
+          onclick="removeIncomingShare('${escapeHtml(shareId)}')"
+        >
+          ✕ Odstrániť toto zdieľanie
+        </button>
       </div>
     `;
 
-  }).join("");
+  }
 
   return`
     <div>
-      ${html}
+      ${visibleDatesHtml}
 
       <button
         class="danger"
@@ -2578,11 +2622,6 @@ function removeIncomingShare(shareId){
       shareId
     )
     .remove()
-    .then(function(){
-
-      loadIncomingSharedLists();
-
-    })
     .catch(function(error){
 
       console.error(
@@ -2770,8 +2809,10 @@ function renderStoresOnMap(){
   Object.keys(STORE_DATA)
     .forEach(function(storeName){
 
-      STORE_DATA[storeName]
-        .forEach(function(store){
+      const storeList = STORE_DATA[storeName];
+      const count = storeList.length;
+
+      storeList.forEach(function(store, index){
 
           const status=
             getStoreStatus(store);
@@ -2806,6 +2847,11 @@ function renderStoresOnMap(){
               {icon:icon}
             ).addTo(map);
 
+          // Pokiaľ je predajní daného typu 2 a viac, pridáme k názvu číslo #1, #2...
+          const displayName = count > 1 
+            ? `${store.name} #${index + 1}` 
+            : store.name;
+
           marker.bindPopup(`
 
             <div class="store-popup">
@@ -2816,7 +2862,7 @@ function renderStoresOnMap(){
               >
 
               <h3>
-                ${escapeHtml(store.name)}
+                ${escapeHtml(displayName)}
               </h3>
 
               <p>
