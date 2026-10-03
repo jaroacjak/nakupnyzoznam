@@ -823,6 +823,23 @@ const STORE_DATA={
         6:["06:00","20:00"],
         0:["08:00","17:00"]
       }
+    },
+
+    {
+      name:"COOP Jednota Bytča SuperMarket",
+      lat:49.2221753,
+      lng:18.5624397,
+      address:"Eliáša Lániho, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
+      hours:{
+        1:["06:00","19:00"],
+        2:["06:00","19:00"],
+        3:["06:00","19:00"],
+        4:["06:00","19:00"],
+        5:["06:00","19:00"],
+        6:["06:00","13:00"],
+        0:["08:00","12:00"]
+      }
     }
 
   ],
@@ -1679,24 +1696,6 @@ function changeQty(id,amount){
     1,
     Number(item.quantity || 1)+amount
   );
-
-  renderItems();
-  save();
-
-}
-
-
-/* ==================================================
-   KÚPENÉ
-================================================== */
-
-function toggleItem(id){
-
-  const item=findItem(id);
-
-  if(!item)return;
-
-  item.done=!item.done;
 
   renderItems();
   save();
@@ -2810,9 +2809,8 @@ function renderStoresOnMap(){
     .forEach(function(storeName){
 
       const storeList = STORE_DATA[storeName];
-      const count = storeList.length;
 
-      storeList.forEach(function(store, index){
+      storeList.forEach(function(store){
 
           const status=
             getStoreStatus(store);
@@ -2847,11 +2845,6 @@ function renderStoresOnMap(){
               {icon:icon}
             ).addTo(map);
 
-          // Pokiaľ je predajní daného typu 2 a viac, pridáme k názvu číslo #1, #2...
-          const displayName = count > 1 
-            ? `${store.name} #${index + 1}` 
-            : store.name;
-
           marker.bindPopup(`
 
             <div class="store-popup">
@@ -2862,7 +2855,7 @@ function renderStoresOnMap(){
               >
 
               <h3>
-                ${escapeHtml(displayName)}
+                ${escapeHtml(store.name)}
               </h3>
 
               <p>
