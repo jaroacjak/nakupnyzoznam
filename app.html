@@ -1,1 +1,3233 @@
-Prave prebieha údržba 
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nákupný kalendár</title>
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#f2f4f7;
+  color:#222;
+  font-family:Arial,sans-serif;
+}
+
+.app{
+  max-width:950px;
+  margin:auto;
+  padding:16px;
+}
+
+.card{
+  background:#fff;
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 5px 25px rgba(0,0,0,.08);
+  margin-bottom:16px;
+}
+
+h1{text-align:center;margin:5px 0 20px}
+h2{margin-top:5px}
+
+button,input{
+  font:inherit;
+  border-radius:10px;
+}
+
+button{cursor:pointer}
+
+input{
+  border:1px solid #ccc;
+  padding:11px;
+  width:100%;
+}
+
+.primary{
+  background:#222;
+  color:#fff;
+  border:0;
+  padding:11px 15px;
+}
+
+.secondary{
+  background:#eee;
+  color:#222;
+  border:0;
+  padding:11px 15px;
+}
+
+.danger{
+  background:#d9534f;
+  color:#fff;
+  border:0;
+  padding:10px 13px;
+}
+
+.success{
+  background:#198754;
+  color:#fff;
+  border:0;
+  padding:10px 13px;
+}
+
+.hidden{display:none!important}
+
+.top-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.user-info{min-width:0}
+
+.user-label{
+  font-size:12px;
+  color:#777;
+}
+
+.user-email{
+  font-weight:bold;
+  margin-top:3px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.logout-button{white-space:nowrap}
+
+.date-add{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  margin-bottom:18px;
+}
+
+.date-list{
+  display:grid;
+  gap:10px;
+}
+
+.date-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:#fafafa;
+  border:1px solid #ddd;
+  border-radius:14px;
+  padding:14px;
+}
+
+.date-info{
+  flex:1;
+  cursor:pointer;
+}
+
+.date-title{
+  font-weight:bold;
+  font-size:17px;
+}
+
+.date-meta{
+  margin-top:5px;
+  color:#777;
+  font-size:13px;
+}
+
+.date-actions{
+  display:flex;
+  gap:6px;
+}
+
+.empty{
+  text-align:center;
+  color:#888;
+  padding:30px 10px;
+}
+
+.stores{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:8px;
+  margin-bottom:15px;
+}
+
+.store-button{
+  min-width:110px;
+  padding:10px;
+  border:0;
+  background:#eee;
+  white-space:nowrap;
+}
+
+.store-button.active{
+  background:#222;
+  color:#fff;
+}
+
+.shop-title{
+  margin:10px 0 15px;
+}
+
+.add-item{
+  display:grid;
+  grid-template-columns:1fr 90px 110px;
+  gap:8px;
+  margin-bottom:15px;
+}
+
+.item-list{display:grid}
+
+.item{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:12px 0;
+  border-bottom:1px solid #eee;
+}
+
+.item-checkbox{width:auto}
+
+.item-name{
+  flex:1;
+  min-width:0;
+  word-break:break-word;
+}
+
+.item.done .item-name{
+  text-decoration:line-through;
+  opacity:.5;
+}
+
+.quantity{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+
+.quantity button{
+  width:32px;
+  height:32px;
+  padding:0;
+  border:0;
+  background:#eee;
+}
+
+.item-edit{
+  border:0;
+  background:#eee;
+  padding:8px 10px;
+}
+
+.item-delete{
+  border:0;
+  background:#d9534f;
+  color:#fff;
+  padding:8px 10px;
+}
+
+.bottom-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-top:18px;
+}
+
+.item-count{
+  color:#777;
+  font-size:13px;
+}
+
+.share-box{
+  margin-top:20px;
+  padding:15px;
+  background:#f7f7f7;
+  border:1px solid #ddd;
+  border-radius:14px;
+}
+
+.share-title{
+  font-weight:bold;
+  margin-bottom:7px;
+}
+
+.share-description{
+  color:#777;
+  font-size:13px;
+  line-height:1.5;
+  margin-bottom:12px;
+}
+
+.share-form{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+}
+
+.share-options{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:10px 0;
+}
+
+.share-date-box{
+  margin-top:10px;
+}
+
+.share-status{
+  margin-top:10px;
+  font-size:13px;
+  color:#777;
+}
+
+.shared-users{
+  margin-top:10px;
+  display:grid;
+  gap:7px;
+}
+
+.shared-user{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:10px;
+  padding:9px;
+  font-size:14px;
+}
+
+.shared-date-list{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+
+.shared-date-card{
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:10px;
+}
+
+.shared-date-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.shared-owner{
+  color:#777;
+  font-size:13px;
+  margin-top:4px;
+}
+
+.shared-shop{
+  margin-top:12px;
+  border-top:1px solid #eee;
+  padding-top:10px;
+}
+
+.shared-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 0;
+  border-bottom:1px solid #f0f0f0;
+}
+
+.shared-item.done .shared-item-name{
+  text-decoration:line-through;
+  opacity:.55;
+}
+
+.shared-item-name{
+  flex:1;
+}
+
+.map-status{
+  background:#f1f1f1;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  font-size:14px;
+}
+
+.map-buttons{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
+}
+
+.map-buttons button{flex:1}
+
+#map{
+  width:100%;
+  height:480px;
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid #ddd;
+}
+
+.shop-icon{
+  width:44px;
+  height:44px;
+  background:#fff;
+  border:2px solid #222;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.35);
+}
+
+.shop-icon img{
+  width:36px;
+  height:36px;
+  object-fit:contain;
+}
+
+.store-popup{
+  min-width:240px;
+  text-align:center;
+}
+
+.store-popup img{
+  width:55px;
+  height:55px;
+  object-fit:contain;
+}
+
+.store-popup h3{margin:7px 0}
+.store-popup p{margin:7px 0}
+
+.store-popup button{
+  width:100%;
+  margin-top:7px;
+}
+
+.hours{
+  text-align:left;
+  font-size:13px;
+  line-height:1.6;
+  margin-top:10px;
+}
+
+@media(max-width:650px){
+  .top-bar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .logout-button{width:100%}
+
+  .date-add{grid-template-columns:1fr}
+
+  .date-row{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .date-actions{width:100%}
+
+  .date-actions button{flex:1}
+
+  .add-item{
+    grid-template-columns:1fr 80px;
+  }
+
+  .add-item button{
+    grid-column:1/-1;
+  }
+
+  .item{flex-wrap:wrap}
+
+  .item-name{
+    min-width:calc(100% - 40px);
+  }
+
+  .bottom-bar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .share-form{
+    grid-template-columns:1fr;
+  }
+
+  .share-options{
+    grid-template-columns:1fr;
+  }
+
+  #map{height:420px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<section class="card">
+  <div class="top-bar">
+    <div class="user-info">
+      <div class="user-label">Prihlásený používateľ</div>
+      <div id="currentUser" class="user-email">Načítavam...</div>
+    </div>
+
+    <button class="danger logout-button" onclick="logout()">
+      🚪 Odhlásiť sa
+    </button>
+  </div>
+</section>
+
+
+<section id="datesPage" class="card">
+
+  <h1>🛒 Nákupný kalendár</h1>
+
+  <h2>📅 Nákupné dátumy</h2>
+
+  <p>
+    Každý dátum má vlastný nákupný zoznam.
+  </p>
+
+  <div class="date-add">
+    <input id="newDate" type="date">
+
+    <button class="primary" onclick="addDate()">
+      ➕ Pridať dátum
+    </button>
+  </div>
+
+  <div id="dateList" class="date-list"></div>
+
+
+  <div class="share-box">
+
+    <div class="share-title">
+      👥 Zdieľanie nákupného zoznamu
+    </div>
+
+    <div class="share-description">
+      Zadaj e-mail používateľa. Môžeš zdieľať jeden konkrétny dátum
+      alebo všetky zoznamy dlhodobo.
+    </div>
+
+    <div class="share-form">
+      <input
+        id="shareEmail"
+        type="email"
+        placeholder="E-mail používateľa"
+      >
+
+      <button class="primary" onclick="shareList()">
+        👥 Zdieľať
+      </button>
+    </div>
+
+    <div class="share-options">
+
+      <label>
+        <input
+          id="shareLongTerm"
+          type="checkbox"
+          onchange="updateShareDateVisibility()"
+        >
+        ♾️ Dlhodobo – všetky dátumy
+      </label>
+
+      <div id="shareDateBox" class="share-date-box">
+        <input id="shareDate" type="date">
+      </div>
+
+    </div>
+
+    <div id="shareStatus" class="share-status"></div>
+
+    <div class="share-title" style="margin-top:15px">
+      👥 Moje zdieľania
+    </div>
+
+    <div id="sharedUsers" class="shared-users"></div>
+
+  </div>
+
+
+  <div class="share-box">
+
+    <div class="share-title">
+      📥 Zdieľané so mnou
+    </div>
+
+    <div class="share-description">
+      Tu vidíš nákupné zoznamy, ktoré s tebou zdieľali iní používatelia. Položky môžeš priamo odškrtávať.
+    </div>
+
+    <div id="incomingSharedLists" class="shared-date-list"></div>
+
+  </div>
+
+</section>
+
+
+<section id="shoppingPage" class="card hidden">
+
+  <button class="secondary" onclick="showDates()">
+    ← Späť na dátumy
+  </button>
+
+  <h2 id="selectedDate"></h2>
+
+  <h3>🏪 Vyber obchod</h3>
+
+  <div id="stores" class="stores"></div>
+
+  <h3 id="shopTitle" class="shop-title"></h3>
+
+  <div class="add-item">
+
+    <input
+      id="itemName"
+      type="text"
+      placeholder="Čo treba kúpiť?"
+      autocomplete="off"
+    >
+
+    <input
+      id="itemQty"
+      type="number"
+      min="1"
+      value="1"
+    >
+
+    <button class="primary" onclick="addItem()">
+      ➕ Pridať
+    </button>
+
+  </div>
+
+  <div id="itemList" class="item-list"></div>
+
+  <div class="bottom-bar">
+
+    <span id="itemCount" class="item-count"></span>
+
+    <button class="danger" onclick="clearBought()">
+      🗑️ Vymazať kúpené
+    </button>
+
+  </div>
+
+</section>
+
+
+<section class="card">
+
+  <h2>🗺️ Predajne</h2>
+
+  <div class="map-buttons">
+
+    <button class="primary" onclick="mojaPoloha()">
+      📍 Moja poloha
+    </button>
+
+  </div>
+
+  <div id="mapStatus" class="map-status">
+    🗺️ Načítavam mapu...
+  </div>
+
+  <div id="map"></div>
+
+</section>
+
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+
+const firebaseConfig = {
+  apiKey:"AIzaSyB5Gv-H-Sm8JKz9pqfN6hhbKYUlfVK4vzE",
+  authDomain:"nakupnyzoznam-1a04e.firebaseapp.com",
+  databaseURL:"https://nakupnyzoznam-1a04e-default-rtdb.firebaseio.com",
+  projectId:"nakupnyzoznam-1a04e",
+  storageBucket:"nakupnyzoznam-1a04e.firebasestorage.app",
+  messagingSenderId:"307268915654",
+  appId:"1:307268915654:web:7de04a52585181dd0fe2c7",
+  measurementId:"G-VZR504GLW7"
+};
+
+if(!firebase.apps.length){
+  firebase.initializeApp(firebaseConfig);
+}
+
+const auth=firebase.auth();
+const firebaseDatabase=firebase.database();
+
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+const STORES=[
+  "Lidl",
+  "Kaufland",
+  "Tesco",
+  "Billa",
+  "COOP Jednota",
+  "Terno",
+  "Penny",
+  "Koruna Potraviny",
+  "Môj Obchod",
+  "Potraviny P Drevanková",
+  "Iné"
+];
+
+let database={};
+let currentDate=null;
+let currentStore=null;
+let currentFirebaseUser=null;
+let map=null;
+let userMarker=null;
+let storeMarkers=[];
+
+
+/* ==================================================
+   PREDAJNE
+================================================== */
+
+const STORE_DATA={
+
+  "Lidl":[
+    {
+      name:"Lidl Bytča",
+      lat:49.222110,
+      lng:18.566888,
+      address:"Hlavná 2025/7, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIuwFw2691OFu2tnBQLkZoPmRO12gnJ3FZa5H_jAApvw&s=10",
+      hours:{
+        1:["07:00","21:00"],
+        2:["07:00","21:00"],
+        3:["07:00","21:00"],
+        4:["07:00","21:00"],
+        5:["07:00","21:00"],
+        6:["07:00","21:00"],
+        0:["08:00","20:00"]
+      }
+    }
+  ],
+
+  "Kaufland":[
+    {
+      name:"Kaufland Bytča",
+      lat:49.216362,
+      lng:18.559423,
+      address:"Hlavná 2033, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHgo_B_QJiQ-opGdnYZm8cMirVNIWBhehckLea9EJRmg&s=10",
+      hours:{
+        1:["07:00","21:00"],
+        2:["07:00","21:00"],
+        3:["07:00","21:00"],
+        4:["07:00","21:00"],
+        5:["07:00","21:00"],
+        6:["07:00","21:00"],
+        0:["08:00","20:00"]
+      }
+    }
+  ],
+
+  "Tesco":[],
+
+  "Billa":[
+    {
+      name:"Billa Bytča",
+      lat:49.222950,
+      lng:18.564807,
+      address:"Hlavná 1363, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVxNDirsr9_4_HngNI5eb_mkiL7YeSr26FKiGSKrEL6g&s=10",
+      hours:{
+        1:["07:00","21:00"],
+        2:["07:00","21:00"],
+        3:["07:00","21:00"],
+        4:["07:00","21:00"],
+        5:["07:00","21:00"],
+        6:["07:00","21:00"],
+        0:["08:00","20:00"]
+      }
+    }
+  ],
+
+  "COOP Jednota":[
+
+    {
+      name:"COOP Jednota Bytča",
+      lat:49.223857,
+      lng:18.557885,
+      address:"Námestie Slovenskej republiky 10, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
+      hours:{
+        1:["05:45","18:00"],
+        2:["05:45","18:00"],
+        3:["05:45","18:00"],
+        4:["05:45","18:00"],
+        5:["05:45","18:00"],
+        6:["05:45","13:00"],
+        0:["07:30","12:00"]
+      }
+    },
+
+    {
+      name:"COOP Jednota Supermarket Bytča – Thurzove sady",
+      lat:49.218030,
+      lng:18.542893,
+      address:"Thurzove sady, Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
+      hours:{
+        1:["06:00","19:00"],
+        2:["06:00","19:00"],
+        3:["06:00","19:00"],
+        4:["06:00","19:00"],
+        5:["06:00","19:00"],
+        6:["06:00","13:00"],
+        0:["06:00","12:00"]
+      }
+    },
+
+    {
+      name:"COOP Jednota Tempo Bytča",
+      lat:49.2256175,
+      lng:18.5592794,
+      address:"Hlinkova 1120, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
+      hours:{
+        1:["06:00","20:00"],
+        2:["06:00","20:00"],
+        3:["06:00","20:00"],
+        4:["06:00","20:00"],
+        5:["06:00","20:00"],
+        6:["06:00","20:00"],
+        0:["08:00","17:00"]
+      }
+    },
+
+    {
+      name:"COOP Jednota Bytča SuperMarket",
+      lat:49.2221753,
+      lng:18.5624397,
+      address:"Eliáša Lániho, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
+      hours:{
+        1:["06:00","19:00"],
+        2:["06:00","19:00"],
+        3:["06:00","19:00"],
+        4:["06:00","19:00"],
+        5:["06:00","19:00"],
+        6:["06:00","13:00"],
+        0:["08:00","12:00"]
+      }
+    }
+
+  ],
+
+  "Terno":[],
+
+  "Penny":[],
+
+  "Koruna Potraviny":[
+
+    {
+      name:"Koruna Potraviny – Komenského",
+      lat:49.223983,
+      lng:18.554310,
+      address:"Komenského 5, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt9pQfLGEs_tQf5ibTwOy4DkQe8Fr3QbafzXBxWlMk9A&s=10",
+      hours:{
+        1:["06:00","19:00"],
+        2:["06:00","19:00"],
+        3:["06:00","19:00"],
+        4:["06:00","19:00"],
+        5:["06:00","19:00"],
+        6:["06:00","14:00"],
+        0:["07:00","12:00"]
+      }
+    },
+
+    {
+      name:"Koruna Potraviny",
+      lat:49.221383,
+      lng:18.559506,
+      address:"Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt9pQfLGEs_tQf5ibTwOy4DkQe8Fr3QbafzXBxWlMk9A&s=10",
+      hours:{
+        1:["06:00","17:00"],
+        2:["06:00","17:00"],
+        3:["06:00","17:00"],
+        4:["06:00","17:00"],
+        5:["07:00","18:00"],
+        6:["06:45","12:30"],
+        0:null
+      }
+    }
+
+  ],
+
+  "Môj Obchod":[
+    {
+      name:"Môj Obchod Bytča",
+      lat:49.224910,
+      lng:18.555901,
+      address:"Slovenského národného povstania 894/1, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1XwDVLbRYmeCfGtGIlKv1g0cmKc_6-wsAw73627z_iQ&s=10",
+      hours:{
+        1:["06:00","18:00"],
+        2:["06:00","18:00"],
+        3:["06:00","18:00"],
+        4:["06:00","18:00"],
+        5:["06:00","18:00"],
+        6:["06:00","12:00"],
+        0:null
+      }
+    }
+  ],
+
+  "Potraviny P Drevanková":[
+    {
+      name:"Potraviny P.Drevanková",
+      lat:49.223301,
+      lng:18.559471,
+      address:"Námestie Slovenskej republiky 26, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpVRqUPLqASAcgIg8mxgacjivo9UeVPdYlK70oQLlZA&s",
+      hours:{
+        1:["05:15","17:00"],
+        2:["05:15","17:00"],
+        3:["05:15","17:00"],
+        4:["05:15","17:00"],
+        5:["05:15","17:00"],
+        6:["06:30","11:00"],
+        0:null
+      }
+    }
+  ],
+
+  "Iné":[]
+
+};
+
+
+/* ==================================================
+   DÁTUM
+================================================== */
+
+function getLocalDateString(){
+
+  const now=new Date();
+  const offset=now.getTimezoneOffset();
+
+  return new Date(
+    now.getTime()-offset*60000
+  ).toISOString().slice(0,10);
+
+}
+
+
+/* ==================================================
+   HTML
+================================================== */
+
+function escapeHtml(value){
+
+  const div=document.createElement("div");
+  div.textContent=String(value ?? "");
+
+  return div.innerHTML;
+
+}
+
+
+/* ==================================================
+   ŠTRUKTÚRA
+================================================== */
+
+function ensureDate(date){
+
+  if(!date)return;
+
+  if(!database[date] ||
+     typeof database[date]!=="object"){
+
+    database[date]={};
+
+  }
+
+  STORES.forEach(function(store){
+
+    if(!Array.isArray(database[date][store])){
+      database[date][store]=[];
+    }
+
+  });
+
+}
+
+
+/* ==================================================
+   PRIHLÁSENIE
+================================================== */
+
+auth.onAuthStateChanged(function(user){
+
+  if(!user){
+
+    window.location.href="login.html";
+    return;
+
+  }
+
+  currentFirebaseUser=user;
+
+  const userElement=document.getElementById("currentUser");
+
+  if(userElement){
+
+    userElement.textContent=
+      user.email ||
+      user.displayName ||
+      "Používateľ";
+
+  }
+
+  registerPublicUser();
+  listenFirebaseData();
+  listenSharing();
+  listenIncomingSharedLists();
+
+});
+
+
+/* ==================================================
+   VEREJNÝ INDEX E-MAIL -> UID
+================================================== */
+
+function emailKey(email){
+
+  return encodeURIComponent(
+    normalizeEmail(email)
+  ).replace(/\./g,"%2E");
+
+}
+
+
+function registerPublicUser(){
+
+  if(!currentFirebaseUser ||
+     !currentFirebaseUser.email){
+
+    return Promise.resolve();
+
+  }
+
+  const email=normalizeEmail(
+    currentFirebaseUser.email
+  );
+
+  return firebaseDatabase
+    .ref("publicUsers/"+emailKey(email))
+    .set({
+      uid:currentFirebaseUser.uid,
+      email:email
+    })
+    .catch(function(error){
+
+      console.error(
+        "Registrácia používateľa:",
+        error
+      );
+
+    });
+
+}
+
+
+/* ==================================================
+   ODHLÁSENIE
+================================================== */
+
+function logout(){
+
+  auth.signOut()
+    .then(function(){
+
+      window.location.href="index.html";
+
+    })
+    .catch(function(error){
+
+      console.error("Odhlásenie:",error);
+
+      alert(
+        "Odhlásenie sa nepodarilo."
+      );
+
+    });
+
+}
+
+
+/* ==================================================
+   ULOŽENIE VLASTNÝCH DÁT
+================================================== */
+
+function save(){
+
+  try{
+
+    localStorage.setItem(
+      "nakupnyKalendárV2",
+      JSON.stringify(database)
+    );
+
+  }catch(error){
+
+    console.error(
+      "LocalStorage:",
+      error
+    );
+
+  }
+
+  if(!currentFirebaseUser){
+
+    return Promise.resolve();
+
+  }
+
+  return firebaseDatabase
+    .ref(
+      "users/" +
+      currentFirebaseUser.uid +
+      "/shoppingData"
+    )
+    .set(database)
+    .then(function(){
+
+      console.log(
+        "✅ Dáta uložené do Firebase."
+      );
+
+      return syncAllShares();
+
+    })
+    .catch(function(error){
+
+      console.error(
+        "❌ Firebase uloženie:",
+        error
+      );
+
+      alert(
+        "Dáta sa nepodarilo uložiť do Firebase: "+
+        error.message
+      );
+
+      throw error;
+
+    });
+
+}
+
+
+/* ==================================================
+   NAČÍTANIE A REALTIME SLUCHAČ VLASTNÝCH DÁT
+================================================== */
+
+function listenFirebaseData(){
+
+  if(!currentFirebaseUser)return;
+
+  firebaseDatabase
+    .ref(
+      "users/" +
+      currentFirebaseUser.uid +
+      "/shoppingData"
+    )
+    .on("value", function(snapshot){
+
+      const data=snapshot.val();
+
+      if(data && typeof data==="object"){
+        database=data;
+      }else{
+        database={};
+      }
+
+      Object.keys(database).forEach(function(date){
+        ensureDate(date);
+      });
+
+      try{
+
+        localStorage.setItem(
+          "nakupnyKalendárV2",
+          JSON.stringify(database)
+        );
+
+      }catch(error){
+
+        console.error(error);
+
+      }
+
+      renderDates();
+      if(!document.getElementById("shoppingPage").classList.contains("hidden")){
+        renderItems();
+      }
+
+    }, function(error){
+
+      console.error(
+        "Firebase načítanie:",
+        error
+      );
+
+      try{
+
+        database=JSON.parse(
+          localStorage.getItem(
+            "nakupnyKalendárV2"
+          ) || "{}"
+        );
+
+      }catch(e){
+
+        database={};
+
+      }
+
+      renderDates();
+
+    });
+
+}
+
+
+/* ==================================================
+   FORMÁT DÁTUMU
+================================================== */
+
+function formatDate(date){
+
+  return new Intl.DateTimeFormat(
+    "sk-SK",
+    {
+      weekday:"long",
+      day:"numeric",
+      month:"long",
+      year:"numeric"
+    }
+  ).format(
+    new Date(date+"T12:00:00")
+  );
+
+}
+
+
+/* ==================================================
+   PRIDAŤ DÁTUM
+================================================== */
+
+function addDate(){
+
+  const input=document.getElementById("newDate");
+  const date=input.value;
+
+  if(!date){
+
+    alert("Vyber dátum.");
+    input.focus();
+    return;
+
+  }
+
+  if(!database[date]){
+    database[date]={};
+  }
+
+  ensureDate(date);
+
+  save()
+    .then(function(){
+
+      currentDate=date;
+
+      currentStore=
+        localStorage.getItem(
+          "poslednyObchod"
+        ) || "Lidl";
+
+      if(!STORES.includes(currentStore)){
+        currentStore="Lidl";
+      }
+
+      openShoppingPage();
+
+    })
+    .catch(function(){
+
+      currentDate=date;
+      openShoppingPage();
+
+    });
+
+}
+
+
+/* ==================================================
+   ZOBRAZIŤ DÁTUMY
+================================================== */
+
+function showDates(){
+
+  currentDate=null;
+  currentStore=null;
+
+  document
+    .getElementById("shoppingPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("datesPage")
+    .classList.remove("hidden");
+
+  renderDates();
+
+}
+
+
+/* ==================================================
+   DÁTUMY
+================================================== */
+
+function renderDates(){
+
+  const list=document.getElementById("dateList");
+
+  if(!list)return;
+
+  const dates=Object.keys(database)
+    .sort()
+    .reverse();
+
+  if(!dates.length){
+
+    list.innerHTML=`
+      <div class="empty">
+        Zatiaľ nemáš žiadny dátum.
+        <br><br>
+        Vyber dátum vyššie a klikni na
+        <b>Pridať dátum</b>.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  list.innerHTML=dates.map(function(date){
+
+    ensureDate(date);
+
+    let total=0;
+    let bought=0;
+
+    STORES.forEach(function(store){
+
+      const items=
+        Array.isArray(database[date][store])
+          ? database[date][store]
+          : [];
+
+      total+=items.length;
+
+      bought+=items.filter(function(item){
+        return item.done===true;
+      }).length;
+
+    });
+
+    return`
+      <div class="date-row">
+
+        <div
+          class="date-info"
+          onclick="openDate('${date}')"
+        >
+
+          <div class="date-title">
+            📅 ${escapeHtml(formatDate(date))}
+          </div>
+
+          <div class="date-meta">
+            ${total} položiek
+            •
+            ${bought} kúpených
+          </div>
+
+        </div>
+
+        <div class="date-actions">
+
+          <button
+            class="primary"
+            onclick="openDate('${date}')"
+          >
+            Otvoriť
+          </button>
+
+          <button
+            class="secondary"
+            onclick="editDate('${date}')"
+          >
+            ✏️
+          </button>
+
+          <button
+            class="danger"
+            onclick="deleteDate('${date}')"
+          >
+            🗑️
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  }).join("");
+
+}
+
+
+/* ==================================================
+   OTVORIŤ DÁTUM
+================================================== */
+
+function openDate(date){
+
+  if(!database[date]){
+    database[date]={};
+  }
+
+  ensureDate(date);
+
+  currentDate=date;
+
+  currentStore=
+    localStorage.getItem(
+      "poslednyObchod"
+    ) || "Lidl";
+
+  if(!STORES.includes(currentStore)){
+    currentStore="Lidl";
+  }
+
+  openShoppingPage();
+
+}
+
+
+/* ==================================================
+   NÁKUPNÝ ZOZNAM
+================================================== */
+
+function openShoppingPage(){
+
+  if(!currentDate)return;
+
+  ensureDate(currentDate);
+
+  document
+    .getElementById("datesPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("shoppingPage")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("selectedDate")
+    .textContent=
+      "📅 "+formatDate(currentDate);
+
+  renderStores();
+  renderItems();
+
+}
+
+
+/* ==================================================
+   UPRAVIŤ DÁTUM
+================================================== */
+
+function editDate(date){
+
+  const newDate=prompt(
+    "Zadaj nový dátum vo formáte RRRR-MM-DD:",
+    date
+  );
+
+  if(newDate===null)return;
+
+  const cleanDate=newDate.trim();
+
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)){
+
+    alert(
+      "Dátum musí byť vo formáte RRRR-MM-DD."
+    );
+
+    return;
+
+  }
+
+  if(cleanDate===date)return;
+
+  if(database[cleanDate]){
+
+    alert(
+      "Tento dátum už existuje."
+    );
+
+    return;
+
+  }
+
+  database[cleanDate]=database[date];
+  delete database[date];
+
+  save().then(function(){
+    renderDates();
+  }).catch(function(){
+    renderDates();
+  });
+
+}
+
+
+/* ==================================================
+   VYMAZAŤ DÁTUM
+================================================== */
+
+function deleteDate(date){
+
+  if(!confirm(
+    "Naozaj chceš vymazať celý nákupný zoznam pre tento dátum?"
+  ))return;
+
+  delete database[date];
+
+  save()
+    .then(function(){
+
+      if(currentDate===date){
+        showDates();
+      }else{
+        renderDates();
+      }
+
+    })
+    .catch(function(){
+
+      renderDates();
+
+    });
+
+}
+
+
+/* ==================================================
+   OBCHODY
+================================================== */
+
+function renderStores(){
+
+  const container=document.getElementById("stores");
+
+  if(!container)return;
+
+  container.innerHTML=
+    STORES.map(function(store){
+
+      return`
+        <button
+          class="store-button ${
+            store===currentStore ? "active" : ""
+          }"
+          onclick="selectStore('${escapeHtml(store)}')"
+        >
+          ${escapeHtml(store)}
+        </button>
+      `;
+
+    }).join("");
+
+  const title=document.getElementById("shopTitle");
+
+  if(title){
+
+    title.textContent=
+      "🛍️ Nákupný zoznam – "+
+      currentStore;
+
+  }
+
+}
+
+
+/* ==================================================
+   VYBRAŤ OBCHOD
+================================================== */
+
+function selectStore(store){
+
+  if(!STORES.includes(store))return;
+  if(!currentDate)return;
+
+  currentStore=store;
+
+  localStorage.setItem(
+    "poslednyObchod",
+    store
+  );
+
+  ensureDate(currentDate);
+
+  renderStores();
+  renderItems();
+
+}
+
+
+/* ==================================================
+   PRIDAŤ POLOŽKU
+================================================== */
+
+function addItem(){
+
+  if(!currentDate){
+
+    alert("Najprv vyber dátum.");
+    return;
+
+  }
+
+  if(!currentStore){
+
+    alert("Najprv vyber obchod.");
+    return;
+
+  }
+
+  ensureDate(currentDate);
+
+  const nameInput=document.getElementById("itemName");
+  const qtyInput=document.getElementById("itemQty");
+
+  const name=nameInput.value.trim();
+
+  const quantity=Math.max(
+    1,
+    parseInt(qtyInput.value,10) || 1
+  );
+
+  if(!name){
+
+    nameInput.focus();
+    return;
+
+  }
+
+  if(!Array.isArray(
+    database[currentDate][currentStore]
+  )){
+
+    database[currentDate][currentStore]=[];
+
+  }
+
+  database[currentDate][currentStore].push({
+
+    id:
+      Date.now()+"-"+
+      Math.random()
+        .toString(36)
+        .substring(2),
+
+    name:name,
+
+    quantity:quantity,
+
+    done:false
+
+  });
+
+  renderItems();
+
+  nameInput.value="";
+  qtyInput.value=1;
+  nameInput.focus();
+
+  save();
+
+}
+
+
+/* ==================================================
+   NÁJSŤ POLOŽKU
+================================================== */
+
+function findItem(id){
+
+  if(!currentDate || !currentStore)return null;
+
+  ensureDate(currentDate);
+
+  const items=
+    database[currentDate][currentStore];
+
+  if(!Array.isArray(items))return null;
+
+  return items.find(function(item){
+
+    return String(item.id)===String(id);
+
+  });
+
+}
+
+
+/* ==================================================
+   MNOŽSTVO
+================================================== */
+
+function changeQty(id,amount){
+
+  const item=findItem(id);
+
+  if(!item)return;
+
+  item.quantity=Math.max(
+    1,
+    Number(item.quantity || 1)+amount
+  );
+
+  renderItems();
+  save();
+
+}
+
+
+/* ==================================================
+   KÚPENÉ
+================================================== */
+
+function toggleItem(id){
+
+  const item=findItem(id);
+
+  if(!item)return;
+
+  item.done=!item.done;
+
+  renderItems();
+  save();
+
+}
+
+
+/* ==================================================
+   UPRAVIŤ POLOŽKU
+================================================== */
+
+function editItem(id){
+
+  const item=findItem(id);
+
+  if(!item)return;
+
+  const name=prompt(
+    "Názov položky:",
+    item.name
+  );
+
+  if(name===null)return;
+
+  const cleanName=name.trim();
+
+  if(!cleanName)return;
+
+  const quantity=prompt(
+    "Množstvo:",
+    item.quantity
+  );
+
+  if(quantity===null)return;
+
+  item.name=cleanName;
+
+  item.quantity=Math.max(
+    1,
+    parseInt(quantity,10)||1
+  );
+
+  renderItems();
+  save();
+
+}
+
+
+/* ==================================================
+   VYMAZAŤ POLOŽKU
+================================================== */
+
+function deleteItem(id){
+
+  if(!currentDate || !currentStore)return;
+
+  ensureDate(currentDate);
+
+  database[currentDate][currentStore]=
+    database[currentDate][currentStore]
+      .filter(function(item){
+
+        return String(item.id)!==String(id);
+
+      });
+
+  renderItems();
+  save();
+
+}
+
+
+/* ==================================================
+   VYMAZAŤ KÚPENÉ
+================================================== */
+
+function clearBought(){
+
+  if(!currentDate || !currentStore)return;
+
+  ensureDate(currentDate);
+
+  database[currentDate][currentStore]=
+    database[currentDate][currentStore]
+      .filter(function(item){
+
+        return item.done!==true;
+
+      });
+
+  renderItems();
+  save();
+
+}
+
+
+/* ==================================================
+   VYKRESLIŤ POLOŽKY
+================================================== */
+
+function renderItems(){
+
+  const container=document.getElementById("itemList");
+
+  if(!container)return;
+
+  if(!currentDate || !currentStore){
+
+    container.innerHTML="";
+    return;
+
+  }
+
+  ensureDate(currentDate);
+
+  const items=
+    database[currentDate][currentStore];
+
+  if(!Array.isArray(items) || !items.length){
+
+    container.innerHTML=`
+      <div class="empty">
+        V tomto obchode zatiaľ nemáš žiadne položky.
+      </div>
+    `;
+
+  }else{
+
+    container.innerHTML=
+      items.map(function(item){
+
+        const id=escapeHtml(String(item.id));
+
+        return`
+          <div class="item ${item.done?"done":""}">
+
+            <input
+              class="item-checkbox"
+              type="checkbox"
+              ${item.done?"checked":""}
+              onchange="toggleItem('${id}')"
+            >
+
+            <span class="item-name">
+              ${escapeHtml(item.name)}
+            </span>
+
+            <div class="quantity">
+
+              <button onclick="changeQty('${id}',-1)">
+                −
+              </button>
+
+              <b>${Number(item.quantity)||1}</b>
+
+              <button onclick="changeQty('${id}',1)">
+                +
+              </button>
+
+            </div>
+
+            <button
+              class="item-edit"
+              onclick="editItem('${id}')"
+            >
+              ✏️
+            </button>
+
+            <button
+              class="item-delete"
+              onclick="deleteItem('${id}')"
+            >
+              🗑️
+            </button>
+
+          </div>
+        `;
+
+      }).join("");
+
+  }
+
+  const count=items.length;
+
+  const bought=items.filter(function(item){
+    return item.done===true;
+  }).length;
+
+  const counter=document.getElementById("itemCount");
+
+  if(counter){
+
+    counter.textContent=
+      count+
+      " položiek • "+
+      bought+
+      " kúpených";
+
+  }
+
+}
+
+
+/* ==================================================
+   ZDIEĽANIE – DÁTUM / DLHODOBO
+================================================== */
+
+function normalizeEmail(email){
+
+  return String(email || "")
+    .trim()
+    .toLowerCase();
+
+}
+
+
+function updateShareDateVisibility(){
+
+  const longTerm=
+    document.getElementById(
+      "shareLongTerm"
+    ).checked;
+
+  const box=
+    document.getElementById(
+      "shareDateBox"
+    );
+
+  if(box){
+
+    box.classList.toggle(
+      "hidden",
+      longTerm
+    );
+
+  }
+
+}
+
+
+/* ==================================================
+   ZDIEĽANIE
+================================================== */
+
+function shareList(){
+
+  if(!currentFirebaseUser){
+
+    alert("Nie si prihlásený.");
+    return;
+
+  }
+
+  const input=document.getElementById("shareEmail");
+  const status=document.getElementById("shareStatus");
+  const dateInput=document.getElementById("shareDate");
+  const longTerm=document.getElementById("shareLongTerm").checked;
+
+  const email=normalizeEmail(input.value);
+
+  if(!email){
+
+    status.textContent="❌ Zadaj e-mail.";
+    input.focus();
+    return;
+
+  }
+
+  if(email===normalizeEmail(currentFirebaseUser.email)){
+
+    status.textContent=
+      "❌ Svoj zoznam nemôžeš zdieľať sám so sebou.";
+
+    return;
+
+  }
+
+  let date=null;
+
+  if(!longTerm){
+
+    date=dateInput.value;
+
+    if(!date){
+
+      status.textContent=
+        "❌ Vyber dátum alebo zapni dlhodobé zdieľanie.";
+
+      return;
+
+    }
+
+    if(!database[date]){
+
+      status.textContent=
+        "❌ Tento dátum ešte nemáš vytvorený.";
+
+      return;
+
+    }
+
+  }
+
+  status.textContent=
+    "⏳ Hľadám používateľa...";
+
+  firebaseDatabase
+    .ref(
+      "publicUsers/" +
+      emailKey(email)
+    )
+    .once("value")
+    .then(function(snapshot){
+
+      const user=snapshot.val();
+
+      if(!user || !user.uid){
+
+        throw new Error(
+          "Používateľ s týmto e-mailom sa ešte v aplikácii neprihlásil."
+        );
+
+      }
+
+      const shareId=
+        currentFirebaseUser.uid+
+        "_" +
+        user.uid;
+
+      const shareData={
+
+        ownerUid:
+          currentFirebaseUser.uid,
+
+        ownerEmail:
+          normalizeEmail(
+            currentFirebaseUser.email
+          ),
+
+        recipientUid:
+          user.uid,
+
+        recipientEmail:
+          email,
+
+        longTerm:
+          longTerm,
+
+        date:
+          date || null,
+
+        active:true,
+
+        createdAt:
+          firebase.database.ServerValue.TIMESTAMP
+
+      };
+
+      const updates={};
+
+      updates[
+        "sharedLists/" +
+        currentFirebaseUser.uid +
+        "/" +
+        shareId
+      ]=shareData;
+
+      updates[
+        "sharedData/" +
+        user.uid +
+        "/" +
+        shareId
+      ]={
+        ownerUid:
+          currentFirebaseUser.uid,
+
+        ownerEmail:
+          normalizeEmail(
+            currentFirebaseUser.email
+          ),
+
+        recipientUid:
+          user.uid,
+
+        recipientEmail:
+          email,
+
+        longTerm:
+          longTerm,
+
+        date:
+          date || null,
+
+        active:true,
+
+        data:
+          longTerm
+            ? database
+            : {
+                [date]:
+                  database[date]
+              },
+
+        updatedAt:
+          firebase.database.ServerValue.TIMESTAMP
+
+      };
+
+      return firebaseDatabase
+        .ref()
+        .update(updates);
+
+    })
+    .then(function(){
+
+      status.textContent=
+        "✅ Zoznam bol zdieľaný s "+
+        email+".";
+
+      input.value="";
+
+    })
+    .catch(function(error){
+
+      console.error(
+        "Zdieľanie:",
+        error
+      );
+
+      status.textContent=
+        "❌ "+error.message;
+
+    });
+
+}
+
+
+/* ==================================================
+   AKTUALIZOVAŤ VŠETKY ZDIEĽANIA
+================================================== */
+
+function syncAllShares(){
+
+  if(!currentFirebaseUser){
+
+    return Promise.resolve();
+
+  }
+
+  return firebaseDatabase
+    .ref(
+      "sharedLists/" +
+      currentFirebaseUser.uid
+    )
+    .once("value")
+    .then(function(snapshot){
+
+      const shares=snapshot.val() || {};
+      const updates={};
+
+      Object.keys(shares).forEach(function(shareId){
+
+        const share=shares[shareId];
+
+        if(!share || !share.active)return;
+
+        let sharedData;
+
+        if(share.longTerm){
+
+          sharedData=database;
+
+        }else{
+
+          if(!share.date ||
+             !database[share.date]){
+
+            sharedData={};
+
+          }else{
+
+            sharedData={
+              [share.date]:
+                database[share.date]
+            };
+
+          }
+
+        }
+
+        updates[
+          "sharedData/" +
+          share.recipientUid +
+          "/" +
+          shareId +
+          "/data"
+        ]=sharedData;
+
+        updates[
+          "sharedData/" +
+          share.recipientUid +
+          "/" +
+          shareId +
+          "/updatedAt"
+        ]=
+          firebase.database.ServerValue.TIMESTAMP;
+
+      });
+
+      if(!Object.keys(updates).length){
+
+        return null;
+
+      }
+
+      return firebaseDatabase
+        .ref()
+        .update(updates);
+
+    });
+
+}
+
+
+/* ==================================================
+   MOJE ZDIEĽANIA (REALTIME LISTEN)
+================================================== */
+
+function listenSharing(){
+
+  if(!currentFirebaseUser)return;
+
+  const container=
+    document.getElementById(
+      "sharedUsers"
+    );
+
+  if(!container)return;
+
+  firebaseDatabase
+    .ref(
+      "sharedLists/" +
+      currentFirebaseUser.uid
+    )
+    .on("value", function(snapshot){
+
+      const data=snapshot.val() || {};
+
+      const shares=
+        Object.values(data)
+          .filter(function(share){
+            return share && share.active;
+          });
+
+      if(!shares.length){
+
+        container.innerHTML=
+          '<div class="empty">Zatiaľ nič nezdieľaš.</div>';
+
+        return;
+
+      }
+
+      container.innerHTML=
+        shares.map(function(share){
+
+          const scope=
+            share.longTerm
+              ? "♾️ Dlhodobo"
+              : "📅 "+
+                formatDate(share.date);
+
+          return`
+            <div class="shared-user">
+
+              <div>
+                <b>👤 ${escapeHtml(
+                  share.recipientEmail
+                )}</b>
+
+                <div style="color:#777;font-size:12px">
+                  ${escapeHtml(scope)}
+                </div>
+              </div>
+
+              <button
+                class="danger"
+                onclick="removeSharedUser(
+                  '${escapeHtml(share.recipientUid)}',
+                  '${escapeHtml(
+                    share.ownerUid+"_"+share.recipientUid
+                  )}'
+                )"
+              >
+                ✕
+              </button>
+
+            </div>
+          `;
+
+        }).join("");
+
+    }, function(error){
+
+      console.error(
+        "Načítanie zdieľania:",
+        error
+      );
+
+    });
+
+}
+
+
+/* ==================================================
+   ZRUŠIŤ ZDIEĽANIE
+================================================== */
+
+function removeSharedUser(recipientUid,shareId){
+
+  if(!currentFirebaseUser)return;
+
+  if(!confirm(
+    "Naozaj chceš zrušiť toto zdieľanie?"
+  ))return;
+
+  const updates={};
+
+  updates[
+    "sharedLists/" +
+    currentFirebaseUser.uid +
+    "/" +
+    shareId
+  ]=null;
+
+  updates[
+    "sharedData/" +
+    recipientUid +
+    "/" +
+    shareId
+  ]=null;
+
+  firebaseDatabase
+    .ref()
+    .update(updates)
+    .catch(function(error){
+
+      console.error(
+        "Zrušenie zdieľania:",
+        error
+      );
+
+      alert(
+        "Zdieľanie sa nepodarilo zrušiť."
+      );
+
+    });
+
+}
+
+
+/* ==================================================
+   ZDIEĽANÉ SO MNOU (REALTIME LISTEN)
+================================================== */
+
+function listenIncomingSharedLists(){
+
+  if(!currentFirebaseUser)return;
+
+  const container=
+    document.getElementById(
+      "incomingSharedLists"
+    );
+
+  if(!container)return;
+
+  firebaseDatabase
+    .ref(
+      "sharedData/" +
+      currentFirebaseUser.uid
+    )
+    .on("value", function(snapshot){
+
+      const data=snapshot.val() || {};
+
+      const shares=
+        Object.keys(data)
+          .map(function(key){
+
+            return{
+              id:key,
+              share:data[key]
+            };
+
+          })
+          .filter(function(entry){
+
+            return entry.share &&
+                   entry.share.active;
+
+          });
+
+      if(!shares.length){
+
+        container.innerHTML=
+          '<div class="empty">Nikto s tebou zatiaľ nezdieľa zoznam.</div>';
+
+        return;
+
+      }
+
+      container.innerHTML=
+        shares.map(function(entry){
+
+          return renderIncomingShare(
+            entry.id,
+            entry.share
+          );
+
+        }).join("");
+
+    }, function(error){
+
+      console.error(
+        "Zdieľané zoznamy:",
+        error
+      );
+
+    });
+
+}
+
+
+/* ==================================================
+   ODŠKRTÁVANIE POLOŽKY V ZDIEĽANOM ZOZNAME
+================================================== */
+
+function toggleIncomingItem(ownerUid, date, store, itemId, currentStatus) {
+
+  const newStatus = !currentStatus;
+
+  firebaseDatabase
+    .ref("users/" + ownerUid + "/shoppingData/" + date + "/" + store)
+    .once("value")
+    .then(function(snapshot) {
+
+      const items = snapshot.val() || [];
+
+      if (!Array.isArray(items)) return;
+
+      const updatedItems = items.map(function(item) {
+
+        if (String(item.id) === String(itemId)) {
+
+          return { ...item, done: newStatus };
+
+        }
+
+        return item;
+
+      });
+
+      return firebaseDatabase
+        .ref("users/" + ownerUid + "/shoppingData/" + date + "/" + store)
+        .set(updatedItems);
+
+    })
+    .catch(function(error) {
+
+      console.error("Chyba pri aktualizácii zdieľanej položky:", error);
+
+    });
+
+}
+
+
+/* ==================================================
+   VYKRESLIŤ ZDIEĽANÝ ZOZNAM
+================================================== */
+
+function renderIncomingShare(shareId,share){
+
+  const sharedData=
+    share.data || {};
+
+  const dates=
+    Object.keys(sharedData)
+      .sort()
+      .reverse();
+
+  if(!dates.length){
+
+    return `
+      <div class="shared-date-card">
+        <b>👤 ${escapeHtml(
+          share.ownerEmail
+        )}</b>
+
+        <div class="empty">
+          Zoznam je zatiaľ prázdny.
+        </div>
+
+        <button
+          class="danger"
+          style="margin-top:8px;width:100%"
+          onclick="removeIncomingShare('${escapeHtml(shareId)}')"
+        >
+          ✕ Odstrániť zo zdieľaných
+        </button>
+      </div>
+    `;
+
+  }
+
+  let visibleDatesHtml="";
+
+  dates.forEach(function(date){
+
+    const dateData=sharedData[date] || {};
+
+    let shops="";
+
+    STORES.forEach(function(store){
+
+      const items=
+        Array.isArray(dateData[store])
+          ? dateData[store]
+          : [];
+
+      if(!items.length)return;
+
+      shops+=`
+        <div class="shared-shop">
+
+          <b>🏪 ${escapeHtml(store)}</b>
+
+          ${
+            items.map(function(item){
+
+              const itemId = escapeHtml(String(item.id));
+              const ownerUid = escapeHtml(String(share.ownerUid));
+
+              return`
+                <div class="shared-item ${item.done ? "done" : ""}">
+
+                  <input
+                    type="checkbox"
+                    ${item.done ? "checked" : ""}
+                    onchange="toggleIncomingItem('${ownerUid}', '${date}', '${escapeHtml(store)}', '${itemId}',${item.done ? true : false})"
+                  >
+
+                  <span class="shared-item-name">
+                    ${escapeHtml(item.name)}
+                  </span>
+
+                  <span>
+                    × ${Number(item.quantity)||1}
+                  </span>
+
+                </div>
+              `;
+
+            }).join("")
+          }
+
+        </div>
+      `;
+
+    });
+
+    if(shops !== ""){
+
+      visibleDatesHtml+=`
+        <div class="shared-date-card">
+
+          <div class="shared-date-header">
+
+            <div>
+              <b>📅 ${escapeHtml(
+                formatDate(date)
+              )}</b>
+
+              <div class="shared-owner">
+                👤 ${escapeHtml(
+                  share.ownerEmail
+                )}
+              </div>
+            </div>
+
+          </div>
+
+          ${shops}
+
+        </div>
+      `;
+
+    }
+
+  });
+
+  if(!visibleDatesHtml){
+
+    return `
+      <div class="shared-date-card">
+        <b>👤 ${escapeHtml(share.ownerEmail)}</b>
+        <div class="empty">Žiadne položky v tomto zozname.</div>
+        <button
+          class="danger"
+          style="margin-top:8px;width:100%"
+          onclick="removeIncomingShare('${escapeHtml(shareId)}')"
+        >
+          ✕ Odstrániť toto zdieľanie
+        </button>
+      </div>
+    `;
+
+  }
+
+  return`
+    <div>
+      ${visibleDatesHtml}
+
+      <button
+        class="danger"
+        style="margin-top:8px;width:100%"
+        onclick="removeIncomingShare('${escapeHtml(shareId)}')"
+      >
+        ✕ Odstrániť toto zdieľanie
+      </button>
+    </div>
+  `;
+
+}
+
+
+/* ==================================================
+   ODSTRÁNIŤ PRIJATÉ ZDIEĽANIE
+================================================== */
+
+function removeIncomingShare(shareId){
+
+  if(!currentFirebaseUser)return;
+
+  if(!confirm(
+    "Odstrániť tento zdieľaný zoznam?"
+  ))return;
+
+  firebaseDatabase
+    .ref(
+      "sharedData/" +
+      currentFirebaseUser.uid +
+      "/" +
+      shareId
+    )
+    .remove()
+    .catch(function(error){
+
+      console.error(
+        "Odstránenie prijatého zdieľania:",
+        error
+      );
+
+    });
+
+}
+
+
+/* ==================================================
+   MAPA
+================================================== */
+
+function createMap(){
+
+  if(typeof L==="undefined"){
+
+    document.getElementById(
+      "mapStatus"
+    ).textContent=
+      "❌ Mapu sa nepodarilo načítať.";
+
+    return;
+
+  }
+
+  if(map)return;
+
+  map=L.map("map").setView(
+    [49.220,18.560],
+    14
+  );
+
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom:19,
+      attribution:
+        "&copy; OpenStreetMap contributors"
+    }
+  ).addTo(map);
+
+  renderStoresOnMap();
+
+  document.getElementById(
+    "mapStatus"
+  ).textContent=
+    "🟢 Mapa je pripravená.";
+
+  setTimeout(function(){
+
+    map.invalidateSize();
+
+  },300);
+
+}
+
+
+/* ==================================================
+   ČAS
+================================================== */
+
+function parseTime(time){
+
+  const parts=time.split(":");
+
+  return(
+    Number(parts[0])*60+
+    Number(parts[1])
+  );
+
+}
+
+
+function getStoreStatus(store){
+
+  const now=new Date();
+  const day=now.getDay();
+
+  const hours=
+    store.hours
+      ? store.hours[day]
+      : null;
+
+  if(!hours){
+
+    return{
+      open:false,
+      text:"🔴 Zatvorené"
+    };
+
+  }
+
+  const current=
+    now.getHours()*60+
+    now.getMinutes();
+
+  const opening=parseTime(hours[0]);
+  const closing=parseTime(hours[1]);
+
+  if(
+    current>=opening &&
+    current<closing
+  ){
+
+    return{
+      open:true,
+      text:"🟢 Otvorené do "+hours[1]
+    };
+
+  }
+
+  return{
+    open:false,
+    text:"🔴 Zatvorené"
+  };
+
+}
+
+
+/* ==================================================
+   OTVÁRACIE HODINY
+================================================== */
+
+function getHoursHtml(store){
+
+  const days=[
+    "Ne",
+    "Po",
+    "Ut",
+    "St",
+    "Št",
+    "Pi",
+    "So"
+  ];
+
+  if(!store.hours)return "";
+
+  return days.map(function(day,index){
+
+    const hours=store.hours[index];
+
+    if(!hours){
+
+      return`
+        <div>
+          <b>${day}:</b>
+          zatvorené
+        </div>
+      `;
+
+    }
+
+    return`
+      <div>
+        <b>${day}:</b>
+        ${hours[0]} – ${hours[1]}
+      </div>
+    `;
+
+  }).join("");
+
+}
+
+
+/* ==================================================
+   PREDAJNE NA MAPE
+================================================== */
+
+function renderStoresOnMap(){
+
+  if(!map)return;
+
+  storeMarkers.forEach(function(marker){
+
+    map.removeLayer(marker);
+
+  });
+
+  storeMarkers=[];
+
+  Object.keys(STORE_DATA)
+    .forEach(function(storeName){
+
+      const storeList = STORE_DATA[storeName];
+
+      storeList.forEach(function(store){
+
+          const status=
+            getStoreStatus(store);
+
+          const icon=
+            L.divIcon({
+
+              className:"",
+
+              html:`
+                <div class="shop-icon">
+
+                  <img
+                    src="${store.logo}"
+                    alt=""
+                    onerror="
+                      this.style.display='none'
+                    "
+                  >
+
+                </div>
+              `,
+
+              iconSize:[44,44],
+              iconAnchor:[22,22]
+
+            });
+
+          const marker=
+            L.marker(
+              [store.lat,store.lng],
+              {icon:icon}
+            ).addTo(map);
+
+          marker.bindPopup(`
+
+            <div class="store-popup">
+
+              <img
+                src="${store.logo}"
+                alt=""
+              >
+
+              <h3>
+                ${escapeHtml(store.name)}
+              </h3>
+
+              <p>
+                📍 ${escapeHtml(store.address)}
+              </p>
+
+              <p>
+                ${status.text}
+              </p>
+
+              <div class="hours">
+
+                <b>Otváracie hodiny</b>
+
+                ${getHoursHtml(store)}
+
+              </div>
+
+              <button
+                class="primary"
+                onclick="
+                  selectStoreFromMap(
+                    '${escapeHtml(storeName)}'
+                  )
+                "
+              >
+                🛒 Nakupovať tu
+              </button>
+
+              <button
+                class="secondary"
+                onclick="
+                  navigateTo(
+                    ${store.lat},
+                    ${store.lng}
+                  )
+                "
+              >
+                🧭 Navigovať
+              </button>
+
+            </div>
+
+          `);
+
+          storeMarkers.push(marker);
+
+        });
+
+    });
+
+}
+
+
+/* ==================================================
+   OBCHOD Z MAPY
+================================================== */
+
+function selectStoreFromMap(store){
+
+  if(!STORES.includes(store))return;
+
+  if(!currentDate){
+
+    currentDate=getLocalDateString();
+    ensureDate(currentDate);
+
+  }
+
+  currentStore=store;
+
+  localStorage.setItem(
+    "poslednyObchod",
+    store
+  );
+
+  openShoppingPage();
+
+}
+
+
+/* ==================================================
+   NAVIGÁCIA
+================================================== */
+
+function navigateTo(lat,lng){
+
+  const url=
+    "https://www.google.com/maps/dir/?api=1&destination="+
+    encodeURIComponent(
+      lat+","+lng
+    );
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+}
+
+
+/* ==================================================
+   MOJA POLOHA
+================================================== */
+
+function mojaPoloha(){
+
+  const status=
+    document.getElementById(
+      "mapStatus"
+    );
+
+  if(!navigator.geolocation){
+
+    status.textContent=
+      "❌ Tvoj prehliadač nepodporuje určovanie polohy.";
+
+    return;
+
+  }
+
+  status.textContent=
+    "📍 Získavam tvoju polohu...";
+
+  navigator.geolocation.getCurrentPosition(
+
+    function(position){
+
+      const lat=
+        position.coords.latitude;
+
+      const lng=
+        position.coords.longitude;
+
+      if(userMarker){
+
+        map.removeLayer(
+          userMarker
+        );
+
+      }
+
+      userMarker=
+        L.marker([lat,lng])
+          .addTo(map)
+          .bindPopup(
+            "📍 Tvoja poloha"
+          )
+          .openPopup();
+
+      map.setView(
+        [lat,lng],
+        15
+      );
+
+      status.textContent=
+        "📍 Tvoja poloha bola nájdená.";
+
+    },
+
+    function(error){
+
+      console.error(
+        "Geolocation:",
+        error
+      );
+
+      status.textContent=
+        "❌ Tvoju polohu sa nepodarilo získať.";
+
+    },
+
+    {
+      enableHighAccuracy:true,
+      timeout:10000,
+      maximumAge:60000
+    }
+
+  );
+
+}
+
+
+/* ==================================================
+   ENTER
+================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function(){
+
+    const itemName=
+      document.getElementById(
+        "itemName"
+      );
+
+    const itemQty=
+      document.getElementById(
+        "itemQty"
+      );
+
+    if(itemName){
+
+      itemName.addEventListener(
+        "keydown",
+        function(event){
+
+          if(event.key==="Enter"){
+
+            event.preventDefault();
+            addItem();
+
+          }
+
+        }
+      );
+
+    }
+
+    if(itemQty){
+
+      itemQty.addEventListener(
+        "keydown",
+        function(event){
+
+          if(event.key==="Enter"){
+
+            event.preventDefault();
+            addItem();
+
+          }
+
+        }
+      );
+
+    }
+
+    const dateInput=
+      document.getElementById(
+        "newDate"
+      );
+
+    if(dateInput){
+
+      dateInput.value=
+        getLocalDateString();
+
+    }
+
+    const shareDate=
+      document.getElementById(
+        "shareDate"
+      );
+
+    if(shareDate){
+
+      shareDate.value=
+        getLocalDateString();
+
+    }
+
+    updateShareDateVisibility();
+
+    renderDates();
+
+    createMap();
+
+    setInterval(
+      function(){
+
+        renderStoresOnMap();
+
+      },
+      60000
+    );
+
+  }
+);
+
+</script>
+
+</body>
+</html>
