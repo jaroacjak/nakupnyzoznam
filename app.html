@@ -320,6 +320,7 @@ input{
   border:1px solid #ddd;
   border-radius:14px;
   padding:14px;
+  margin-bottom:10px;
 }
 
 .shared-date-header{
@@ -343,15 +344,19 @@ input{
 
 .shared-item{
   display:flex;
-  justify-content:space-between;
+  align-items:center;
   gap:8px;
   padding:7px 0;
   border-bottom:1px solid #f0f0f0;
 }
 
-.shared-item.done{
+.shared-item.done .shared-item-name{
   text-decoration:line-through;
   opacity:.55;
+}
+
+.shared-item-name{
+  flex:1;
 }
 
 .map-status{
@@ -571,8 +576,7 @@ input{
     </div>
 
     <div class="share-description">
-      Tu vidíš nákupné zoznamy, ktoré s tebou zdieľali iní používatelia.
-      Tvoj vlastný zoznam zostáva oddelený.
+      Tu vidíš nákupné zoznamy, ktoré s tebou zdieľali iní používatelia. Položky môžeš priamo odškrtávať.
     </div>
 
     <div id="incomingSharedLists" class="shared-date-list"></div>
@@ -695,6 +699,8 @@ const STORES=[
   "Terno",
   "Penny",
   "Koruna Potraviny",
+  "Môj Obchod",
+  "Potraviny P.Drevanková",
   "Iné"
 ];
 
@@ -884,6 +890,44 @@ const STORE_DATA={
       }
     }
 
+  ],
+
+  "Môj Obchod":[
+    {
+      name:"Môj Obchod Bytča",
+      lat:49.224910,
+      lng:18.555901,
+      address:"Slovenského národného povstania 894/1, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1XwDVLbRYmeCfGtGIlKv1g0cmKc_6-wsAw73627z_iQ&s=10",
+      hours:{
+        1:["06:00","18:00"],
+        2:["06:00","18:00"],
+        3:["06:00","18:00"],
+        4:["06:00","18:00"],
+        5:["06:00","18:00"],
+        6:["06:00","12:00"],
+        0:null
+      }
+    }
+  ],
+
+  "Potraviny P.Drevanková":[
+    {
+      name:"Potraviny P.Drevanková",
+      lat:49.223301,
+      lng:18.559471,
+      address:"Námestie Slovenskej republiky 26, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpVRqUPLqASAcgIg8mxgacjivo9UeVPdYlK70oQLlZA&s",
+      hours:{
+        1:["05:15","17:00"],
+        2:["05:15","17:00"],
+        3:["05:15","17:00"],
+        4:["05:15","17:00"],
+        5:["05:15","17:00"],
+        6:["06:30","11:00"],
+        0:null
+      }
+    }
   ],
 
   "Iné":[]
@@ -2448,7 +2492,52 @@ function listenIncomingSharedLists(){
 
 
 /* ==================================================
-   VYKRESLIŤ ZDIEĽANÝ ZOZNAM (IBA NEODŠKRTNUTÉ POLOŽKY)
+   ODŠKRTÁVANIE POLOŽKY V ZDIEĽANOM ZOZNAME
+================================================== */
+
+function toggleIncomingItem(ownerUid, date, store, itemId, currentStatus) {
+
+  const newStatus = !currentStatus;
+
+  // Najprv nájdeme celkový zoznam u majiteľa, zmeníme stav danej položky a uložíme späť
+  firebaseDatabase
+    .ref("users/" + ownerUid + "/shoppingData/" + date + "/" + store)
+    .once("value")
+    .then(function(snapshot) {
+
+      const items = snapshot.val() || [];
+
+      if (!Array.isArray(items)) return;
+
+      const updatedItems = items.map(function(item) {
+
+        if (String(item.id) === String(itemId)) {
+
+          return { ...item, done: newStatus };
+
+        }
+
+        return item;
+
+      });
+
+      // Uložíme zmenu do uzla vlastníka zoznamu
+      return firebaseDatabase
+        .ref("users/" + ownerUid + "/shoppingData/" + date + "/" + store)
+        .set(updatedItems);
+
+    })
+    .catch(function(error) {
+
+      console.error("Chyba pri aktualizácii zdieľanej položky:", error);
+
+    });
+
+}
+
+
+/* ==================================================
+   VYKRESLIŤ ZDIEĽANÝ ZOZNAM
 ================================================== */
 
 function renderIncomingShare(shareId,share){
@@ -2500,12 +2589,7 @@ function renderIncomingShare(shareId,share){
           ? dateData[store]
           : [];
 
-      // FILTRUJEME LEN NEODŠKRTNUTÉ POLOŽKY
-      const activeItems = items.filter(function(item){
-        return item && !item.done;
-      });
-
-      if(!activeItems.length)return;
+      if(!items.length)return;
 
       shops+=`
         <div class="shared-shop">
@@ -2513,17 +2597,28 @@ function renderIncomingShare(shareId,share){
           <b>🏪 ${escapeHtml(store)}</b>
 
           ${
-            activeItems.map(function(item){
+            items.map(function(item){
+
+              const itemId = escapeHtml(String(item.id));
+              const ownerUid = escapeHtml(String(share.ownerUid));
 
               return`
-                <div class="shared-item">
-                  <span>
+                <div class="shared-item ${item.done ? "done" : ""}">
+
+                  <input
+                    type="checkbox"
+                    ${item.done ? "checked" : ""}
+                    onchange="toggleIncomingItem('${ownerUid}', '${date}', '${escapeHtml(store)}', '${itemId}',${item.done ? true : false})"
+                  >
+
+                  <span class="shared-item-name">
                     ${escapeHtml(item.name)}
                   </span>
 
                   <span>
                     × ${Number(item.quantity)||1}
                   </span>
+
                 </div>
               `;
 
@@ -2535,7 +2630,6 @@ function renderIncomingShare(shareId,share){
 
     });
 
-    // Ak pre daný dátum existujú nejaké neodškrtnuté obchody/položky, vygenerujeme ho
     if(shops !== ""){
 
       visibleDatesHtml+=`
@@ -2571,7 +2665,7 @@ function renderIncomingShare(shareId,share){
     return `
       <div class="shared-date-card">
         <b>👤 ${escapeHtml(share.ownerEmail)}</b>
-        <div class="empty">Všetky položky sú odškrtnuté (kúpené).</div>
+        <div class="empty">Žiadne položky v tomto zozname.</div>
         <button
           class="danger"
           style="margin-top:8px;width:100%"
