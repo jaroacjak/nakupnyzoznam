@@ -549,7 +549,7 @@ input{
           type="checkbox"
           onchange="updateShareDateVisibility()"
         >
-        ♾️ Dlhodobo – všetky dátumy
+        ♾️️ Dlhodobo – všetky dátumy
       </label>
 
       <div id="shareDateBox" class="share-date-box">
@@ -576,7 +576,7 @@ input{
     </div>
 
     <div class="share-description">
-      Tu vidíš nákupné zoznamy, ktoré s tebou zdieľali iní používatelia. Položky môžeš priamo odškrtávať.
+      Tu vidíš nákupné zoznamy, ktoré s tebou zdieľali iní používatelia. Môžeš pridávať, upravovať, mazať a odškrtávať položky.
     </div>
 
     <div id="incomingSharedLists" class="shared-date-list"></div>
@@ -845,6 +845,23 @@ const STORE_DATA={
         5:["06:00","19:00"],
         6:["06:00","13:00"],
         0:["08:00","12:00"]
+      }
+    },
+
+    {
+      name:"COOP Jednota Potraviny Pšurnovice",
+      lat:49.2358416,
+      lng:18.5254366,
+      address:"Pšurnovice 1131, 014 01 Bytča",
+      logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSObg3sGlckE1EH6HIwsDhCcWjgGOvEiFtCoC8Cnr1J1Q&s=10",
+      hours:{
+        1:["06:30","12:00"],
+        2:["06:30","17:00"],
+        3:["06:30","17:00"],
+        4:["06:30","17:00"],
+        5:["06:30","17:00"],
+        6:null,
+        0:["06:30","12:00"]
       }
     }
 
@@ -2492,33 +2509,19 @@ function listenIncomingSharedLists(){
 
 
 /* ==================================================
-   ODŠKRTÁVANIE POLOŽKY V ZDIEĽANOM ZOZNAME
+   PLNÁ SPRÁVA ZDIEĽANÉHO ZOZNAMU (PRIDAŤ/UPRAVIŤ/ZMAZAŤ/ODŠKRTNÚŤ)
 ================================================== */
 
-function toggleIncomingItem(ownerUid, date, store, itemId, currentStatus) {
-
-  const newStatus = !currentStatus;
+function updateIncomingStoreItems(ownerUid, date, store, updateFn) {
 
   firebaseDatabase
     .ref("users/" + ownerUid + "/shoppingData/" + date + "/" + store)
     .once("value")
     .then(function(snapshot) {
 
-      const items = snapshot.val() || [];
+      const currentItems = snapshot.val() || [];
 
-      if (!Array.isArray(items)) return;
-
-      const updatedItems = items.map(function(item) {
-
-        if (String(item.id) === String(itemId)) {
-
-          return { ...item, done: newStatus };
-
-        }
-
-        return item;
-
-      });
+      const updatedItems = updateFn(Array.isArray(currentItems) ? currentItems : []);
 
       return firebaseDatabase
         .ref("users/" + ownerUid + "/shoppingData/" + date + "/" + store)
@@ -2527,9 +2530,152 @@ function toggleIncomingItem(ownerUid, date, store, itemId, currentStatus) {
     })
     .catch(function(error) {
 
-      console.error("Chyba pri aktualizácii zdieľanej položky:", error);
+      console.error("Chyba pri aktualizácii zdieľaného zoznamu:", error);
+
+      alert("Akciu sa nepodarilo vykonať.");
 
     });
+
+}
+
+
+function addIncomingItem(ownerUid, date, store) {
+
+  const nameInput = document.getElementById(`add_name_${ownerUid}_${date}_${store}`);
+
+  const qtyInput = document.getElementById(`add_qty_${ownerUid}_${date}_${store}`);
+
+  if (!nameInput || !qtyInput) return;
+
+  const name = nameInput.value.trim();
+
+  const quantity = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+
+  if (!name) {
+
+    nameInput.focus();
+
+    return;
+
+  }
+
+  updateIncomingStoreItems(ownerUid, date, store, function(items) {
+
+    items.push({
+
+      id: Date.now() + "-" + Math.random().toString(36).substring(2),
+
+      name: name,
+
+      quantity: quantity,
+
+      done: false
+
+    });
+
+    return items;
+
+  });
+
+  nameInput.value = "";
+
+  qtyInput.value = 1;
+
+}
+
+
+function toggleIncomingItem(ownerUid, date, store, itemId, currentStatus) {
+
+  updateIncomingStoreItems(ownerUid, date, store, function(items) {
+
+    return items.map(function(item) {
+
+      if (String(item.id) === String(itemId)) {
+
+        return { ...item, done: !currentStatus };
+
+      }
+
+      return item;
+
+    });
+
+  });
+
+}
+
+
+function changeIncomingQty(ownerUid, date, store, itemId, delta) {
+
+  updateIncomingStoreItems(ownerUid, date, store, function(items) {
+
+    return items.map(function(item) {
+
+      if (String(item.id) === String(itemId)) {
+
+        const newQty = Math.max(1, (Number(item.quantity) || 1) + delta);
+
+        return { ...item, quantity: newQty };
+
+      }
+
+      return item;
+
+    });
+
+  });
+
+}
+
+
+function editIncomingItem(ownerUid, date, store, itemId, currentName, currentQty) {
+
+  const name = prompt("Názov položky:", currentName);
+
+  if (name === null) return;
+
+  const cleanName = name.trim();
+
+  if (!cleanName) return;
+
+  const quantity = prompt("Množstvo:", currentQty);
+
+  if (quantity === null) return;
+
+  const cleanQty = Math.max(1, parseInt(quantity, 10) || 1);
+
+  updateIncomingStoreItems(ownerUid, date, store, function(items) {
+
+    return items.map(function(item) {
+
+      if (String(item.id) === String(itemId)) {
+
+        return { ...item, name: cleanName, quantity: cleanQty };
+
+      }
+
+      return item;
+
+    });
+
+  });
+
+}
+
+
+function deleteIncomingItem(ownerUid, date, store, itemId) {
+
+  if (!confirm("Naozaj chceš vymazať túto položku?")) return;
+
+  updateIncomingStoreItems(ownerUid, date, store, function(items) {
+
+    return items.filter(function(item) {
+
+      return String(item.id) !== String(itemId);
+
+    });
+
+  });
 
 }
 
@@ -2538,23 +2684,17 @@ function toggleIncomingItem(ownerUid, date, store, itemId, currentStatus) {
    VYKRESLIŤ ZDIEĽANÝ ZOZNAM
 ================================================== */
 
-function renderIncomingShare(shareId,share){
+function renderIncomingShare(shareId, share) {
 
-  const sharedData=
-    share.data || {};
+  const sharedData = share.data || {};
 
-  const dates=
-    Object.keys(sharedData)
-      .sort()
-      .reverse();
+  const dates = Object.keys(sharedData).sort().reverse();
 
-  if(!dates.length){
+  if (!dates.length) {
 
     return `
       <div class="shared-date-card">
-        <b>👤 ${escapeHtml(
-          share.ownerEmail
-        )}</b>
+        <b>👤 ${escapeHtml(share.ownerEmail)}</b>
 
         <div class="empty">
           Zoznam je zatiaľ prázdny.
@@ -2572,55 +2712,95 @@ function renderIncomingShare(shareId,share){
 
   }
 
-  let visibleDatesHtml="";
+  let visibleDatesHtml = "";
 
-  dates.forEach(function(date){
+  dates.forEach(function(date) {
 
-    const dateData=sharedData[date] || {};
+    const dateData = sharedData[date] || {};
 
-    let shops="";
+    let shops = "";
 
-    STORES.forEach(function(store){
+    STORES.forEach(function(store) {
 
-      const items=
-        Array.isArray(dateData[store])
-          ? dateData[store]
-          : [];
+      const items = Array.isArray(dateData[store]) ? dateData[store] : [];
 
-      if(!items.length)return;
+      const ownerUid = escapeHtml(String(share.ownerUid));
 
-      shops+=`
+      const storeSafe = escapeHtml(store);
+
+      shops += `
         <div class="shared-shop">
 
-          <b>🏪 ${escapeHtml(store)}</b>
+          <b>🏪 ${storeSafe}</b>
+
+          <div class="add-item" style="margin-top:8px;">
+            <input
+              id="add_name_${ownerUid}_${date}_${storeSafe}"
+              type="text"
+              placeholder="Pridať položku..."
+            >
+            <input
+              id="add_qty_${ownerUid}_${date}_${storeSafe}"
+              type="number"
+              min="1"
+              value="1"
+            >
+            <button
+              class="primary"
+              onclick="addIncomingItem('${ownerUid}', '${date}', '${storeSafe}')"
+            >
+              ➕
+            </button>
+          </div>
 
           ${
-            items.map(function(item){
+            items.length === 0
+              ? '<div style="color:#888;font-size:12px;padding:5px 0;">Žiadne položky</div>'
+              : items.map(function(item) {
 
-              const itemId = escapeHtml(String(item.id));
-              const ownerUid = escapeHtml(String(share.ownerUid));
+                  const itemId = escapeHtml(String(item.id));
 
-              return`
-                <div class="shared-item ${item.done ? "done" : ""}">
+                  const itemName = escapeHtml(item.name);
 
-                  <input
-                    type="checkbox"
-                    ${item.done ? "checked" : ""}
-                    onchange="toggleIncomingItem('${ownerUid}', '${date}', '${escapeHtml(store)}', '${itemId}',${item.done ? true : false})"
-                  >
+                  const isDone = item.done === true;
 
-                  <span class="shared-item-name">
-                    ${escapeHtml(item.name)}
-                  </span>
+                  return `
+                    <div class="shared-item ${isDone ? "done" : ""}">
 
-                  <span>
-                    × ${Number(item.quantity)||1}
-                  </span>
+                      <input
+                        type="checkbox"
+                        ${isDone ? "checked" : ""}
+                        onchange="toggleIncomingItem('${ownerUid}', '${date}', '${storeSafe}', '${itemId}',${isDone})"
+                      >
 
-                </div>
-              `;
+                      <span class="shared-item-name">
+                        ${itemName}
+                      </span>
 
-            }).join("")
+                      <div class="quantity">
+                        <button onclick="changeIncomingQty('${ownerUid}', '${date}', '${storeSafe}', '${itemId}', -1)">−</button>
+                        <b>${Number(item.quantity) || 1}</b>
+                        <button onclick="changeIncomingQty('${ownerUid}', '${date}', '${storeSafe}', '${itemId}', 1)">+</button>
+                      </div>
+
+                      <button
+                        class="item-edit"
+                        onclick="editIncomingItem('${ownerUid}', '${date}', '${storeSafe}', '${itemId}', '${itemName}',${Number(item.quantity) || 1})"
+                      >
+                        ✏️
+                      </button>
+
+                      <button
+                        class="item-delete"
+                        onclick="deleteIncomingItem('${ownerUid}', '${date}', '${storeSafe}', '${itemId}')"
+                      >
+                        🗑️
+                      </button>
+
+                    </div>
+                  `;
+
+                }).join("")
           }
 
         </div>
@@ -2628,55 +2808,29 @@ function renderIncomingShare(shareId,share){
 
     });
 
-    if(shops !== ""){
+    visibleDatesHtml += `
+      <div class="shared-date-card">
 
-      visibleDatesHtml+=`
-        <div class="shared-date-card">
+        <div class="shared-date-header">
 
-          <div class="shared-date-header">
+          <div>
+            <b>📅 ${escapeHtml(formatDate(date))}</b>
 
-            <div>
-              <b>📅 ${escapeHtml(
-                formatDate(date)
-              )}</b>
-
-              <div class="shared-owner">
-                👤 ${escapeHtml(
-                  share.ownerEmail
-                )}
-              </div>
+            <div class="shared-owner">
+              👤 ${escapeHtml(share.ownerEmail)}
             </div>
-
           </div>
 
-          ${shops}
-
         </div>
-      `;
 
-    }
+        ${shops}
 
-  });
-
-  if(!visibleDatesHtml){
-
-    return `
-      <div class="shared-date-card">
-        <b>👤 ${escapeHtml(share.ownerEmail)}</b>
-        <div class="empty">Žiadne položky v tomto zozname.</div>
-        <button
-          class="danger"
-          style="margin-top:8px;width:100%"
-          onclick="removeIncomingShare('${escapeHtml(shareId)}')"
-        >
-          ✕ Odstrániť toto zdieľanie
-        </button>
       </div>
     `;
 
-  }
+  });
 
-  return`
+  return `
     <div>
       ${visibleDatesHtml}
 
